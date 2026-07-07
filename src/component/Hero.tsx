@@ -15,10 +15,8 @@ export default function Hero() {
         className="object-cover"
       />
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/35"></div>
 
-      {/* Search Box */}
       <div className="absolute inset-0 flex items-center justify-center px-5">
         <div className="flex w-full max-w-3xl rounded-xl bg-white p-4 shadow-2xl h-20">
           <div className="flex flex-1 items-center rounded-lg border border-gray-300 px-5">
@@ -26,7 +24,7 @@ export default function Hero() {
 
             <input
               type="text"
-              placeholder="Any villa you want to rent?"
+              placeholder="Mau liburan kemana?"
               className="h-14 w-full border-none text-lg outline-none text-gray-600"
             />
           </div>
