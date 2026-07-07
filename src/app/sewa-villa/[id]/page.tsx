@@ -7,7 +7,14 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <Banner />
+      <Banner
+        name="Villa Estetik"
+        location="Puncak, Bogor"
+        status="Open"
+        openTime="00.00"
+        closeTime="23.00"
+        showAction={true}
+      />
       <DetailProduct/>
       {/* <Footer /> */}
     </>

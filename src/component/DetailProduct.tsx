@@ -12,21 +12,23 @@ import {
   Star,
 } from "lucide-react";
 import Image from "next/image";
+import Banner from "./Banner";
 
 export default function DetailProduct() {
 const gallery = [
-    "/images/restaurants/banner.jpg",
-    "/images/restaurants/food1.jpg",
-    "/images/restaurants/food2.jpg",
-    "/images/restaurants/interior.jpg",
-    "/images/restaurants/interior2.jpg",
-  ];
+  "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&q=80",
+  "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+  "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
+  "https://images.unsplash.com/photo-1605146769289-440113cc3d00?w=800&q=80",
+];
   return (
     // h-16 rounded-t-[50px] bg-white
     <section className="bg-white rounded-t-[50px] pb-16 -mt-10 z-50">
-      <div className="mx-auto -mt-10 max-w-7xl px-6 ">
+      {/* <Banner /> */}
+      <div className="mx-auto -mt-24 max-w-7xl px-6 ">
           {/* Gallery */}
-        <div className="mt-10 grid gap-3 lg:grid-cols-3">
+        <div className="mt-10 grid gap-3 lg:grid-cols-3 shadow-2xl ">
           {/* Left */}
           <div className="relative h-[420px] overflow-hidden rounded-2xl lg:col-span-2">
             <Image
@@ -38,7 +40,7 @@ const gallery = [
           </div>
 
           {/* Right */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 shadow-2xl">
             {gallery.slice(1).map((img, index) => (
               <div
                 key={index}
