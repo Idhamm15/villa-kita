@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { saveImage, deleteImage, isImage } from "@/lib/upload";
 import { fileUrl } from "@/lib/url";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export async function GET(
   req: NextRequest,
@@ -53,6 +54,24 @@ export async function PUT(
     const { id } = await params;
 
     const form = await req.formData();
+
+    const token = req.cookies.get("token")?.value;
+  
+      if (!token) {
+        return NextResponse.json(
+          {
+            status: false,
+            message: "Unauthorized",
+          },
+          {
+            status: 401,
+          }
+        );
+      }
+  
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    const userId = payload.id;
 
     const categoryId = form.get("categoryId") as string;
     const name = form.get("name") as string;
@@ -126,6 +145,7 @@ export async function PUT(
         },
         data: {
           categoryId,
+          createdBy: userId,
           name,
           slug,
           description,
