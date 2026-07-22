@@ -102,7 +102,7 @@ model Product {
   isActive    Boolean  @default(true)
 
   createdBy  String
-  user    User @relation(fields: [createdBy], references: [id])
+  user User @relation("ProductCreator", fields: [createdBy], references: [id])
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
