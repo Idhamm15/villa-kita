@@ -94,6 +94,7 @@ async function main() {
     update: {},
     create: {
       categoryId: villaCategory.id,
+      createdBy: admin.id,
       name: "Villa Puncak",
       slug: "villa-puncak",
       description: "Villa nyaman dengan pemandangan pegunungan.",
@@ -111,6 +112,7 @@ async function main() {
     update: {},
     create: {
       categoryId: tripCategory.id,
+      createdBy: admin.id,
       name: "Open Trip Bromo",
       slug: "trip-bromo",
       description: "Paket wisata Bromo 2 Hari 1 Malam.",
