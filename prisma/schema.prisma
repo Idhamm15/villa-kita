@@ -45,6 +45,7 @@ model User {
 
   bookings  Booking[]
   tokens    UserToken[]
+  createdProducts Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
