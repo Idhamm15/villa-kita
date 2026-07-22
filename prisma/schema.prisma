@@ -14,7 +14,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
 model UserToken {
   id           String   @id @default(cuid())
 
@@ -22,7 +21,6 @@ model UserToken {
   user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   refreshToken String   @unique
-
   expiredAt    DateTime
 
   createdAt    DateTime @default(now())
@@ -36,19 +34,21 @@ model User {
   fullname  String
   email     String   @unique
   password  String
-  role      Role     @default(USER)
 
-  phone       String?
-  avatar      String?
-  address     String?
-  isActive    Boolean  @default(true)
+  role       Role     @default(USER)
 
-  bookings  Booking[]
-  tokens    UserToken[]
-  createdProducts Product[]
+  phone      String?
+  avatar     String?
+  address    String?
+  isActive   Boolean @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  bookings   Booking[]
+  tokens     UserToken[]
+
+  createdProducts Product[] @relation("ProductCreator")
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 enum Role {
@@ -102,14 +102,17 @@ model Product {
 
   isActive    Boolean  @default(true)
 
-  createdBy  String
-  user User @relation("ProductCreator", fields: [createdBy], references: [id])
+  createdBy   String
+  user        User @relation("ProductCreator", fields: [createdBy], references: [id])
+
+  images      ProductImage[]
+  bookings    Booking[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  images      ProductImage[]
-  bookings    Booking[]
+  @@index([categoryId])
+  @@index([createdBy])
 }
 
 model ProductImage {
@@ -121,6 +124,8 @@ model ProductImage {
   image     String
 
   createdAt DateTime @default(now())
+
+  @@index([productId])
 }
 
 model Booking {
@@ -145,6 +150,9 @@ model Booking {
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([productId])
 }
 
 enum BookingStatus {
