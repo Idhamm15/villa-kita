@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 // import { GoogleAnalytics } from "@next/third-parties/google";
 
 import "./globals.css";
@@ -53,6 +54,10 @@ export default function RootLayout({
     >
       <body className={`${inter.className} min-h-full flex flex-col`}>
         {children}
+        <Toaster
+          position="top-center"
+          richColors
+        />
       </body>
 
       {/* <GoogleAnalytics gaId={GA_TRACKING_ID} /> */}

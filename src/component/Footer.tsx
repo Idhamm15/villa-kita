@@ -16,7 +16,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-gray-800 text-white">
+    <footer className="relative overflow-hidden bg-gray-800 text-white mt-30">
 
       {/* BACKGROUND SHAPE */}
       <div className="absolute left-0 top-20 h-[400px] w-[400px] opacity-10">

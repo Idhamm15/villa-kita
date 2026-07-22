@@ -3,7 +3,7 @@ import DetailProduct from "@/component/DetailProduct";
 import Footer from "@/component/Footer";
 import Navbar from "@/component/Navbar";
 
-export default function Home() {
+export default function Page() {
   return (
     <>
       <Navbar />
@@ -16,7 +16,7 @@ export default function Home() {
         showAction={true}
       />
       <DetailProduct/>
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }

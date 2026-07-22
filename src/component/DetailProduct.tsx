@@ -9,19 +9,68 @@ import {
   MapPin,
   MessageSquare,
   NotebookText,
+  ScrollText,
   Star,
 } from "lucide-react";
 import Image from "next/image";
-import Banner from "./Banner";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/pagination";
+import { CalendarCheck, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+
 
 export default function DetailProduct() {
-const gallery = [
-  "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&q=80",
-  "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
-  "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
-  "https://images.unsplash.com/photo-1605146769289-440113cc3d00?w=800&q=80",
-];
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+  const handleBooking = () => {
+    setLoading(true);
+
+
+    setTimeout(() => {
+      router.push("/booking");
+    }, 5000);
+  };
+  const gallery = [
+    "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&q=80",
+    "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80",
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+    "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
+    "https://images.unsplash.com/photo-1605146769289-440113cc3d00?w=800&q=80",
+  ];
+
+  const reviews = [
+    {
+      id: 1,
+      name: "Andi Pratama",
+      rating: 5,
+      date: "2 minggu lalu",
+      comment:
+        "Villa sangat bersih, pemandangan luar biasa, dan staf sangat ramah. Sangat cocok untuk liburan keluarga.",
+    },
+    {
+      id: 2,
+      name: "Siti Rahma",
+      rating: 5,
+      date: "1 bulan lalu",
+      comment:
+        "Kolam renangnya bersih, kamar nyaman, dan akses menuju lokasi cukup mudah. Akan kembali lagi.",
+    },
+    {
+      id: 3,
+      name: "Budi Santoso",
+      rating: 4,
+      date: "3 minggu lalu",
+      comment:
+        "Tempatnya bagus dan tenang. Cocok untuk healing bersama pasangan maupun keluarga.",
+    },
+  ];
   return (
     // h-16 rounded-t-[50px] bg-white
     <section className="bg-white rounded-t-[50px] pb-16 -mt-10 z-50">
@@ -71,16 +120,16 @@ const gallery = [
           <div className="rounded-2xl bg-white p-6 shadow-lg lg:col-span-3">
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-3xl font-bold text-white">
-                0
+                5
               </div>
 
               <div>
                 <h3 className="text-xl font-bold text-blue-700">
-                  Excellent
+                  Max Tamu
                 </h3>
 
                 <p className="mt-1 text-gray-500">
-                  From 0 reviews
+                  5 Orang
                 </p>
               </div>
 
@@ -111,21 +160,41 @@ const gallery = [
 
           {/* Price */}
           <div className="rounded-2xl bg-white p-6 shadow-lg lg:col-span-4">
-            <p className="text-gray-500">Menu start from</p>
+            <p className="text-gray-500">Booking mulai dari</p>
 
             <div className="mt-2 flex items-end gap-2">
               <span className="text-3xl font-bold text-orange-600">
-                Rp 6.000
+                Rp 1.500.000
               </span>
 
-              <span className="pb-1 text-gray-400 line-through">
-                Rp 11.000
+              <span className="pb-1 text-gray-400">
+                /malam
+                <br />
               </span>
             </div>
 
-            <button className="mt-5 rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white transition hover:bg-orange-600">
-              Find Tables
-            </button>
+              <span className="pb-1 text-gray-400 line-through">
+                Rp. 2.000.000
+                <br />
+              </span>
+
+              <button
+                onClick={handleBooking}
+                disabled={loading}
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <CalendarCheck size={20} />
+                    Pesan Sekarang
+                  </>
+                )}
+              </button>
           </div>
         </div>
 
@@ -142,17 +211,12 @@ const gallery = [
                 />
 
                 <h2 className="text-xl font-bold text-blue-700">
-                  What You'll Experience
+                  Apa saja yang ada di villa ini?
                 </h2>
               </div>
 
               <p className="mt-6 leading-8 text-gray-600">
-                Destinasi kuliner legendaris di Slawi yang
-                terkenal dengan sate kambing, gulai kambing,
-                tongseng, sop buntut, dan berbagai menu khas
-                lainnya. Tempat makan yang nyaman dengan area
-                luas sehingga cocok untuk makan bersama keluarga,
-                teman maupun rombongan.
+                Villa dengan khas yang minimalis dengan view di keliingi pegunungan 360 derajat dengan ketinggian 1000mdpl sangat cocok untuk anda yang ingin menginap sebagai tempat singgah.
               </p>
 
               <button className="mt-8 font-semibold text-blue-600 hover:underline">
@@ -225,46 +289,165 @@ const gallery = [
           <div>
             <div className="rounded-2xl bg-white p-8 shadow-lg">
               <div className="flex items-center gap-3">
-                <MessageSquare
+                <ScrollText
                   className="text-blue-600"
                   size={24}
                 />
 
                 <h2 className="text-xl font-bold text-blue-700">
-                  What Others Are Saying
+                  Syarat & Ketentuan Berlaku
+                </h2>
+              </div>
+
+              <hr className="my-5" />
+              <ul className="mt-2 space-y-1 text-gray-600 text-">
+                <li>✔ Tidak dapat dikembalikan</li>
+                <li>✔ Konfirmasi via Email</li>
+                <li>✔ Tanpa Login</li>
+              </ul>
+              
+
+          
+            </div>
+
+            <div className="rounded-2xl bg-white p-8 shadow-lg mt-10">
+              <div className="flex items-center gap-3">
+                <MapPin
+                  className="text-blue-600"
+                  size={24}
+                />
+
+                <h2 className="text-xl font-bold text-blue-700">
+                  Lokasi Villa
                 </h2>
               </div>
 
               <hr className="my-5" />
 
-              <div className="flex flex-col items-center py-10 text-center">
-                <Star
-                  size={50}
-                  className="text-yellow-400"
-                  fill="#facc15"
+              <div className="overflow-hidden rounded-xl border border-gray-200">
+                <iframe
+                  src="https://www.google.com/maps?q=-6.595038,106.816635&z=15&output=embed"
+                  width="100%"
+                  height="120"
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="border-0"
                 />
-
-                <p className="mt-6 text-gray-500">
-                  There are no reviews for this
-                  restaurant yet.
-                </p>
-
-                <button className="mt-6 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">
-                  Write Review
-                </button>
               </div>
 
-              <div className="mt-10 flex justify-center gap-6">
-                <button className="rounded-full border p-3 hover:bg-gray-100">
-                  <ChevronLeft />
-                </button>
+              <div className="mt-4">
+                <h3 className="font-semibold text-gray-800">
+                  Villa Kita Bogor
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Jl. Contoh No. 123, Bogor, Jawa Barat
+                </p>
 
-                <button className="rounded-full border p-3 hover:bg-gray-100">
-                  <ChevronRight />
-                </button>
+                <a
+                  href="https://maps.google.com/?q=-6.595038,106.816635"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                >
+                  Buka di Google Maps
+                </a>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Rating */}
+        <div className="mt-10 rounded-2xl bg-white p-8 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageSquare
+                className="text-blue-600"
+                size={24}
+              />
+
+              <h2 className="text-xl font-bold text-blue-700">
+                Rating & Ulasan
+              </h2>
+            </div>
+
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1">
+                <Star
+                  className="fill-yellow-400 text-yellow-400"
+                  size={20}
+                />
+                <span className="text-2xl font-bold">4.9</span>
+              </div>
+
+              <p className="text-sm text-gray-500">
+                124 Ulasan
+              </p>
+            </div>
+          </div>
+
+          <hr className="my-6" />
+
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{
+              delay: 4000,
+            }}
+            pagination={{
+              clickable: true,
+            }}
+            spaceBetween={20}
+            breakpoints={{
+              0: {
+                slidesPerView: 1,
+              },
+              768: {
+                slidesPerView: 2,
+              },
+            }}
+          >
+            {reviews.map((review) => (
+              <SwiperSlide key={review.id}>
+                <div className="h-full rounded-xl border border-gray-200 p-6 transition hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
+                        {review.name.charAt(0)}
+                      </div>
+
+                      <div>
+                        <h3 className="font-semibold">
+                          {review.name}
+                        </h3>
+
+                        <p className="text-sm text-gray-500">
+                          {review.date}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="my-4 flex gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={18}
+                        className={
+                          i < review.rating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300"
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  <p className="leading-7 text-gray-600">
+                    "{review.comment}"
+                  </p>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
     </section>

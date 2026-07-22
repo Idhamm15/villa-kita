@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from "@/component/Footer";
 import Navbar from "@/component/Navbar";
 import { BookmarkX } from "lucide-react";
 
@@ -7,7 +8,7 @@ export default function Page() {
   return (
     <>
       <Navbar />
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 py-12 mb-30">
       <div className="mx-auto max-w-7xl px-6">
         {/* Heading */}
         <h2 className="text-3xl font-bold text-slate-900">
@@ -43,6 +44,7 @@ export default function Page() {
         </div>
       </div>
     </section>
+    <Footer/>
     </>
   );
 }

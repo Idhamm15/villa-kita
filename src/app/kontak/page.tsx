@@ -208,7 +208,7 @@ export default function Page() {
 
               <p className="mt-4 text-slate-600">
                 Customer service kami tersedia setiap hari pukul
-                08.00–22.00 WIB.
+                08.00-22.00 WIB.
               </p>
             </div>
 
