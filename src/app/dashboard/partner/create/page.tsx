@@ -3,7 +3,6 @@
 import { useState } from "react";
 import HeaderDashboard from "@/component/admin/HeaderDashboard";
 import NavbarDashboard from "@/component/admin/NavbarDashboard";
-import { apiFetch } from "@/lib/api";
 import { ArrowLeft, Plus } from "lucide-react";
 import Image from "next/image";
 
