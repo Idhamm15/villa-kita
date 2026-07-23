@@ -2,6 +2,7 @@
 
 import HeaderDashboard from "@/component/admin/HeaderDashboard";
 import NavbarDashboard from "@/component/admin/NavbarDashboard";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 export default function CreateBlogPage() {
@@ -274,11 +275,19 @@ const handleFileSelect = async (
         />
 
         {/* Content */}
-        <div className="bg-gray-100 rounded-3xl p-6">
+        <div className="bg-gray-100 rounded-3xl p-12">
 
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
             <div>
+              <button
+                  type="button"
+                  onClick={() => history.back()}
+                  className="mb-5 flex items-center gap-2 text-gray-500 hover:text-blue-600"
+              >
+              <ArrowLeft size={22} />
+              <span>Kembali</span>
+              </button>
               <h1 className="text-3xl font-bold text-gray-900">
                 Tambah Artikel
               </h1>
@@ -627,10 +636,10 @@ const handleFileSelect = async (
                 className="w-full border border-gray-200 rounded-xl p-3"
                 >
                 <option value="">Pilih Kategori</option>
-                <option value="website">Website</option>
-                <option value="aplikasi">Aplikasi</option>
-                <option value="erp">ERP</option>
-                <option value="digital-marketing">Digital Marketing</option>
+                <option value="informasi">Informasi</option>
+                <option value="edukasi">Edukasi</option>
+                <option value="liburan">Liburan</option>
+                <option value="penginapan">Penginapan</option>
                 </select>
 
               </div>

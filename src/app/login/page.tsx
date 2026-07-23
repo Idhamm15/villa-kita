@@ -100,14 +100,14 @@ export default function LoginPage() {
                 </div>
 
                 <h1 className="text-3xl font-bold text-slate-800">
-                Villa<span className="text-violet-600">Kita</span>
+                Villa<span className="text-sky-500">Kita</span>
                 </h1>
             </div>
             </div>
 
             {/* Heading */}
             <div className="text-center">
-            <h2 className="text-2xl font-bold text-violet-600">
+            <h2 className="text-2xl font-bold text-sky-500">
                 Hi, Welcome Back
             </h2>
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
             {/* Form */}
             <form className="mt-10 space-y-6">
             {/* Email */}
-            <div className="rounded-xl border border-purple-600 px-5 py-3">
+            <div className="rounded-xl border border-sky-500 px-5 py-3">
                 <label className="block text-sm text-gray-500">
                     Email Address / Username
                 </label>
@@ -132,7 +132,7 @@ export default function LoginPage() {
             </div>
 
             {/* Password */}
-            <div className="rounded-xl border border-purple-600 px-5 py-3">
+            <div className="rounded-xl border border-sky-500 px-5 py-3">
                 <label className="block text-sm text-gray-500">
                 Password
                 </label>
@@ -147,7 +147,7 @@ export default function LoginPage() {
                 <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-500 hover:text-violet-600"
+                    className="text-gray-500 hover:text-sky-500"
                 >
                     {showPassword ? (
                     <EyeOff size={22} />
@@ -163,7 +163,7 @@ export default function LoginPage() {
                 <label className="flex items-center gap-3 text-lg text-gray-600">
                 <input
                     type="checkbox"
-                    className="h-5 w-5 rounded border-gray-300  accent-violet-600 "
+                    className="h-5 w-5 rounded border-gray-300  accent-sky-500 "
                 />
 
                 Keep me logged in
@@ -171,7 +171,7 @@ export default function LoginPage() {
 
                 <button
                 type="button"
-                className="font-medium text-violet-600 hover:underline"
+                className="font-medium text-sky-500 hover:underline"
                 >
                 Forgot Password?
                 </button>
@@ -179,7 +179,7 @@ export default function LoginPage() {
 
             {/* Button */}
             <button
-                className="w-full rounded-lg bg-violet-600 py-4 text-xl font-semibold text-white transition hover:bg-violet-700"
+                className="w-full rounded-lg bg-sky-500 py-4 text-xl font-semibold text-white transition hover:bg-sky-700"
             >
                 Sign In
             </button>
@@ -192,8 +192,8 @@ export default function LoginPage() {
             <p className="text-center text-lg text-gray-600 font-medium">
             Don't have an account?{" "}
             <a
-                href="#"
-                className="font-semibold text-violet-600 hover:underline"
+                href="/register"
+                className="font-semibold text-sky-500 hover:underline"
             >
                 Register
             </a>

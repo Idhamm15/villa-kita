@@ -124,7 +124,7 @@ export default function HeaderDashboard({
             />
 
             <SidebarButton
-              link="/dashboard/order"
+              link="/dashboard/booking"
               icon={ShoppingCart}
               label="Booking"
             />
@@ -142,7 +142,7 @@ export default function HeaderDashboard({
             />
 
             <SidebarButton
-              link="/dashboard/management-user"
+              link="/dashboard/partner"
               icon={Users}
               label="Partner"
             />

@@ -6,25 +6,55 @@ import Swal from "sweetalert2";
 import HeaderDashboard from "@/component/admin/HeaderDashboard";
 import NavbarDashboard from "@/component/admin/NavbarDashboard";
 import { apiFetch } from "@/lib/api";
+import { Pencil, Search, Trash2 } from "lucide-react";
 
-
-interface Blog {
+interface Owner {
   id: number;
-  user_id: number;
-  title: string;
-  slug: string | null;
-  excerpt: string | null;
-  body: string;
-  thumbnail_url: string | null;
-  status: string;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
+  name: string;
+  email: string;
+  phone: string;
+  bank: string;
+  accountNumber: string;
+  type: "Individual" | "Company";
+  createdAt: string;
 }
+
+const dummyOwners: Owner[] = [
+  {
+    id: 1,
+    name: "Budi Santoso",
+    email: "budi@gmail.com",
+    phone: "081234567890",
+    bank: "BCA",
+    accountNumber: "1234567890",
+    type: "Individual",
+    createdAt: "2026-07-01",
+  },
+  {
+    id: 2,
+    name: "PT Villa Indonesia",
+    email: "admin@villaindonesia.com",
+    phone: "081298765432",
+    bank: "Mandiri",
+    accountNumber: "9876543210",
+    type: "Company",
+    createdAt: "2026-07-03",
+  },
+  {
+    id: 3,
+    name: "Andi Wijaya",
+    email: "andi@gmail.com",
+    phone: "081377788899",
+    bank: "BRI",
+    accountNumber: "111222333",
+    type: "Individual",
+    createdAt: "2026-07-10",
+  },
+];
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [owners, setOwners] = useState<Owner[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -39,34 +69,43 @@ export default function DashboardPage() {
     has_prev_page: false,
   });
 
-  const fetchBlogs = async () => {
+    const fetchOwners = async () => {
     try {
-      setLoading(true);
+        setLoading(true);
 
-      const result = await apiFetch(
-        `/blog?page=${page}&limit=10`
-      );
+        // TODO:
+        // const result = await apiFetch(`/owner?page=${page}&limit=10`);
+        // if(result.status){
+        //   setOwners(result.data);
+        //   setPagination(result.pagination);
+        // }
 
-      if (result.status) {
-        setBlogs(result.data);
-        setPagination(result.pagination);
-      }
-    } catch (error) {
-      console.error(error);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        setOwners(dummyOwners);
+
+        setPagination({
+        current_page: 1,
+        per_page: 10,
+        total_data: dummyOwners.length,
+        total_pages: 1,
+        has_next_page: false,
+        has_prev_page: false,
+        });
+    } catch (err) {
+        console.error(err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
 
   useEffect(() => {
-    fetchBlogs();
+    fetchOwners();
   }, [page]);
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.title
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+    const filteredOwners = owners.filter((owner) =>
+    owner.name.toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
     <div className="min-h-screen bg-white flex overflow-hidden">
@@ -88,40 +127,57 @@ export default function DashboardPage() {
         {/* Content */}
         <div className="bg-gray-100 rounded-3xl p-6">
 
-          <div className="bg-white rounded-3xl p-6 border border-gray-200">
+          <div className="bg-gray-100 rounded-3xl p-6 border-gray-200">
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Pesanan
+                  Kelola Voucher
                 </h1>
 
                 <p className="text-gray-500 mt-1">
-                  Kelola artikel website perusahaan
+                  Kelola Pemilik Villa terdaftar di system
                 </p>
               </div>
 
-              <a href="/dashboard/management-blog/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
-                + Tambah Artikel
-              </a>
             </div>
 
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Cari artikel..."
-                className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Search */}
+              <div className="relative">
+                <Search
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
 
-            <div className="overflow-x-auto">
+                <input
+                  type="text"
+                  placeholder="Cari voucher..."
+                  className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Filter */}
+              <select className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option value="">Semua Status</option>
+                <option value="active">Aktif</option>
+                <option value="inactive">Nonaktif</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+          </div>
+
+            <div className="overflow-x-auto bg-white px-7 py-5 rounded-2xl">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="py-4 text-left text-gray-600">Judul</th>
-                    <th className="py-4 text-left text-gray-600">Penulis</th>
+                    <th className="py-4 text-left text-gray-600">Tamu</th>
+                    <th className="py-4 text-left text-gray-600">Properti</th>
+                    <th className="py-4 text-left text-gray-600">Chekin/Checkout</th>
+                    <th className="py-4 text-left text-gray-600">Total</th>
                     <th className="py-4 text-left text-gray-600">Status</th>
-                    <th className="py-4 text-left text-gray-600">Tanggal</th>
+                    <th className="py-4 text-left text-gray-600">Payment</th>
                     <th className="py-4 text-center text-gray-600">Aksi</th>
                   </tr>
                 </thead>
@@ -135,7 +191,7 @@ export default function DashboardPage() {
                         </div>
                       </td>
                     </tr>
-                  ) : filteredBlogs.length === 0 ? (
+                  ) : filteredOwners.length === 0 ? (
                     <tr>
                       <td
                         colSpan={5}
@@ -145,31 +201,30 @@ export default function DashboardPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredBlogs.map((blog) => (
+                    filteredOwners.map((owner) => (
                       <tr
-                        key={blog.id}
+                        key={owner.id}
                         className="border-b border-gray-100"
                       >
                         <td className="py-4 font-medium">
-                          {blog.title}
+                          {owner.name}
+                        </td>
+                        
+                        <td className="py-4 font-medium">
+                          {owner.email}
+                        </td>
+                        <td className="py-4 font-medium">
+                          {owner.phone}
+                        </td>
+                        <td className="py-4 font-medium">
+                          {owner.bank} <br />  {owner.accountNumber}
+                        </td>
+                        <td className="py-4 font-medium">
+                          {owner.type}
                         </td>
 
-                        <td>Admin</td>
-
                         <td>
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm ${
-                              blog.status === "published"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {blog.status}
-                          </span>
-                        </td>
-
-                        <td>
-                          {new Date(blog.created_at).toLocaleDateString(
+                          {new Date(owner.createdAt).toLocaleDateString(
                             "id-ID",
                             {
                               day: "2-digit",
@@ -180,18 +235,22 @@ export default function DashboardPage() {
                         </td>
 
                         <td>
-                          <div className="flex justify-center gap-2">
+                        <div className="flex justify-center items-center gap-2">
                             <a
-                              href={`/dashboard/management-blog/edit/${blog.slug}`}
-                              className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg"
+                            href={`/dashboard/voucher/edit/${owner.id}`}
+                            className="rounded-lg bg-blue-100 p-2 text-blue-600 transition hover:bg-blue-200"
+                            title="Edit Owner"
                             >
-                              Edit
+                            <Pencil size={18} />
                             </a>
 
-                            <button className="bg-red-100 text-red-700 px-3 py-2 rounded-lg">
-                              Delete
+                            <button
+                            className="rounded-lg bg-red-100 p-2 text-red-600 transition hover:bg-red-200"
+                            title="Hapus Owner"
+                            >
+                            <Trash2 size={18} />
                             </button>
-                          </div>
+                        </div>
                         </td>
                       </tr>
                     ))

@@ -100,14 +100,14 @@ export default function LoginPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-slate-800">
-              Villa<span className="text-violet-600">Kita</span>
+              Villa<span className="text-sky-500">Kita</span>
             </h1>
           </div>
         </div>
 
         {/* Heading */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-violet-600">
+          <h2 className="text-3xl font-bold text-sky-500">
             Sign Up
           </h2>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
         <form className="mt-10 space-y-6">
           {/* Name */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <div className="rounded-xl border border-purple-600 px-5 py-3">
+            <div className="rounded-xl border border-sky-500 px-5 py-3">
               <label className="block text-sm text-gray-500">
                 First Name
               </label>
@@ -135,7 +135,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="rounded-xl border border-purple-600 px-5 py-3">
+            <div className="rounded-xl border border-sky-500 px-5 py-3">
               <label className="block text-sm text-gray-500">
                 Last Name
               </label>
@@ -149,7 +149,7 @@ export default function LoginPage() {
           </div>
 
           {/* Email */}
-          <div className="rounded-xl border border-purple-600 px-5 py-3">
+          <div className="rounded-xl border border-sky-500 px-5 py-3">
             <label className="block text-sm text-gray-500">
               Email Address / Username
             </label>
@@ -162,7 +162,7 @@ export default function LoginPage() {
           </div>
 
           {/* Password */}
-          <div className="rounded-xl border border-purple-600 px-5 py-3">
+          <div className="rounded-xl border border-sky-500 px-5 py-3">
             <label className="block text-sm text-gray-500">
               Password
             </label>
@@ -177,7 +177,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-gray-500 hover:text-violet-600"
+                className="text-gray-500 hover:text-sky-500"
               >
                 {showPassword ? (
                   <EyeOff size={22} />
@@ -192,14 +192,14 @@ export default function LoginPage() {
           <label className="flex items-center gap-3 text-gray-700">
             <input
               type="checkbox"
-              className="h-5 w-5 rounded accent-violet-600"
+              className="h-5 w-5 rounded accent-sky-500"
             />
 
             <span>
               Agree with{" "}
               <Link
                 href="/terms"
-                className="font-semibold text-violet-600 hover:underline"
+                className="font-semibold text-sky-500 hover:underline"
               >
                 Terms & Conditions
               </Link>
@@ -209,7 +209,7 @@ export default function LoginPage() {
           {/* Button */}
           <button
             type="submit"
-            className="w-full rounded-lg bg-violet-600 py-4 text-lg font-semibold text-white transition hover:bg-violet-700"
+            className="w-full rounded-lg bg-sky-500 py-4 text-lg font-semibold text-white transition hover:bg-sky-700"
           >
             Sign Up
           </button>
@@ -223,7 +223,7 @@ export default function LoginPage() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-semibold text-violet-600 hover:underline"
+            className="font-semibold text-sky-500 hover:underline"
           >
             Sign In
           </Link>

@@ -132,7 +132,7 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Kelola Blog
+                  Kelola Voucher
                 </h1>
 
                 <p className="text-gray-500 mt-1">
@@ -140,15 +140,15 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <a href="/dashboard/blog/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
-                + Tambah Blog
+              <a href="/dashboard/voucher/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
+                + Tambah Voucher
               </a>
             </div>
 
             <div className="mb-6">
               <input
                 type="text"
-                placeholder="Cari blog..."
+                placeholder="Cari voucher..."
                 className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -157,10 +157,12 @@ export default function DashboardPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="py-4 text-left text-gray-600">Judul</th>
-                    <th className="py-4 text-left text-gray-600">Penulis</th>
+                    <th className="py-4 text-left text-gray-600">Kode</th>
+                    <th className="py-4 text-left text-gray-600">Deskripsi</th>
+                    <th className="py-4 text-left text-gray-600">Diskon</th>
+                    <th className="py-4 text-left text-gray-600">Min Pembelian</th>
+                    <th className="py-4 text-left text-gray-600">Berlaku</th>
                     <th className="py-4 text-left text-gray-600">Status</th>
-                    <th className="py-4 text-left text-gray-600">Tanggal</th>
                     <th className="py-4 text-center text-gray-600">Aksi</th>
                   </tr>
                 </thead>
@@ -193,6 +195,12 @@ export default function DashboardPage() {
                           {owner.name}
                         </td>
                         
+                        <td className="py-4 font-medium">
+                          {owner.email}
+                        </td>
+                        <td className="py-4 font-medium">
+                          {owner.phone}
+                        </td>
                         <td className="py-4 font-medium">
                           {owner.bank} <br />  {owner.accountNumber}
                         </td>
