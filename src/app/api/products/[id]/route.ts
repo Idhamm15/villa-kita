@@ -48,9 +48,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const form = await req.formData();
 
     const token = req.cookies.get("token")?.value;
@@ -71,7 +72,7 @@ export async function PUT(
 
     const product = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
@@ -123,7 +124,7 @@ export async function PUT(
       where: {
         slug,
         NOT: {
-          id: params.id,
+          id: id,
         },
       },
     });
@@ -153,7 +154,7 @@ export async function PUT(
     const result = await prisma.$transaction(async (tx) => {
       const updated = await tx.product.update({
         where: {
-          id: params.id,
+          id: id,
         },
         data: {
           categoryId,
@@ -239,11 +240,11 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = req.cookies.get("token")?.value;
-
+    const { id } = await params;
     if (!token) {
       return NextResponse.json(
         {
@@ -260,7 +261,7 @@ export async function DELETE(
 
     const product = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
@@ -278,7 +279,7 @@ export async function DELETE(
 
     await prisma.product.delete({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
