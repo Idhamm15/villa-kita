@@ -75,12 +75,6 @@ export async function GET(req: NextRequest) {
               sort: "asc",
             },
           },
-          // attachments: true,
-          // _count: {
-          //   select: {
-          //     bookings: true,
-          //   },
-          // },
         },
         orderBy: {
           createdAt: "desc",

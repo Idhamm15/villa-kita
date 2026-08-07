@@ -213,7 +213,6 @@ export async function PUT(
           user: true,
           images: true,
           items: true,
-          attachments: true,
         },
       });
     });
