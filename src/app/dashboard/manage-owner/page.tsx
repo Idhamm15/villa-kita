@@ -140,7 +140,7 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <a href="/dashboard/management-blog/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
+              <a href="/dashboard/manage-owner/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
                 + Tambah Owner
               </a>
             </div>
@@ -161,7 +161,6 @@ export default function DashboardPage() {
                     <th className="py-4 text-left text-gray-600">Email</th>
                     <th className="py-4 text-left text-gray-600">Telepon</th>
                     <th className="py-4 text-left text-gray-600">Bank & Rekening</th>
-                    <th className="py-4 text-left text-gray-600">Tipe</th>
                     <th className="py-4 text-left text-gray-600">Daftar Tanggal</th>
                     <th className="py-4 text-center text-gray-600">Aksi</th>
                   </tr>
@@ -203,9 +202,6 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-4 font-medium">
                           {owner.bank} <br />  {owner.accountNumber}
-                        </td>
-                        <td className="py-4 font-medium">
-                          {owner.type}
                         </td>
 
                         <td>

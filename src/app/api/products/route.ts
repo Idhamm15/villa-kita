@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { Prisma, TypeBooking, TypeProperty } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { isImage, saveImage } from "@/lib/upload";
 import { fileUrl } from "@/lib/url";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { responseError, serializeBigInt } from "@/lib/helper";
+import { authorizeAdminOwner } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -58,17 +60,28 @@ export async function GET(req: NextRequest) {
         where,
         skip,
         take: limit,
-
         include: {
           category: true,
-          images: true,
-          _count: {
+          owner: {
             select: {
-              bookings: true,
+              id: true,
+              fullname: true,
+              email: true,
             },
           },
+          images: true,
+          items: {
+            orderBy: {
+              sort: "asc",
+            },
+          },
+          // attachments: true,
+          // _count: {
+          //   select: {
+          //     bookings: true,
+          //   },
+          // },
         },
-
         orderBy: {
           createdAt: "desc",
         },
@@ -79,19 +92,22 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
-    // Transform URL gambar
     const data = products.map((product) => ({
       ...product,
 
+      priceStart: product.priceStart.toString(),
+      price: product.price.toString(),
       thumbnail: fileUrl(product.thumbnail),
 
       images: product.images.map((image) => ({
         ...image,
-        image: fileUrl(image.image),
+        image: image.image ? fileUrl(image.image) : null,
       })),
+
     }));
 
-    return NextResponse.json({
+    return NextResponse.json(
+      serializeBigInt({
       status: true,
       code: 200,
       message: "Success",
@@ -102,66 +118,91 @@ export async function GET(req: NextRequest) {
         total,
         totalPage: Math.ceil(total / limit),
       },
-    });
+      })
+    );
+
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json(
-      {
-        status: false,
-        code: 500,
-        message: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return responseError(error);
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    
+    const user = await authorizeAdminOwner(req);
+    
+    const authorization = req.headers.get("authorization");
+    console.log("Authorization:", authorization);
+    
+    // jika perlu, user bisa dipakai
+    console.log(user.id);
+    const userId = user.id;
     const form = await req.formData();
 
-    const token = req.cookies.get("token")?.value;
-
-    if (!token) {
-      return NextResponse.json(
-        {
-          status: false,
-          message: "Unauthorized",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
-
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-
-    const userId = payload.id;
+    // ==========================
+    // GET FORM DATA
+    // ==========================
 
     const categoryId = form.get("categoryId") as string;
+    const ownerId = form.get("ownerId") as string;
+
+    const thumbnail = form.get("thumbnail") as File | null;
     const name = form.get("name") as string;
     const slug = form.get("slug") as string;
-    const description = form.get("description") as string;
-    const price = form.get("price") as string;
+
     const location = form.get("location") as string;
+    const address = form.get("address") as string;
+    const urlMaps = form.get("urlMaps") as string;
+
+    const description = form.get("description") as string;
+
+    const totalBedroom = Number(form.get("totalBedroom") ?? 0);
+    const totalBathroom = Number(form.get("totalBathroom") ?? 0);
+    const maxGuest = Number(form.get("maxGuest") ?? 0);
+    const wide = Number(form.get("wide") ?? 0);
+
+    // const priceStart = BigInt(form.get("priceStart") as string);
+    // const price = BigInt(form.get("price") as string);
+
     const stock = Number(form.get("stock") ?? 1);
+    const capacity = Number(form.get("capacity") ?? 1);
+
+    const typeUnit = form.get("typeUnit") as string;
+
     const isActive = (form.get("isActive") ?? "true") === "true";
 
-    const thumbnail = form.get("thumbnail") as File;
+    // Enum Array
+    const typeProperty = form
+      .getAll("typeProperty")
+      .map((value) => value.toString().trim())
+      .filter(Boolean) as TypeProperty[];
+
+    const typeBooking = form
+      .getAll("typeBooking")
+      .map((value) => value.toString().trim())
+      .filter(Boolean) as TypeBooking[];
+
+    // Images
     const images = form.getAll("images") as File[];
 
     // ==========================
-    // VALIDASI
+    // VALIDATION
     // ==========================
 
-    if (!categoryId || !name || !slug || !description || !price) {
+    if (
+      !categoryId ||
+      !ownerId ||
+      !name ||
+      !slug ||
+      !address ||
+      !urlMaps ||
+      !description
+    ) {
       return NextResponse.json(
         {
           status: false,
-          code: 400,
           message: "Semua field wajib diisi.",
         },
         { status: 400 }
@@ -179,12 +220,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           status: false,
-          code: 404,
           message: "Kategori tidak ditemukan.",
         },
         { status: 404 }
       );
     }
+
+    // cek owner
+    const owner = await prisma.user.findUnique({
+      where: {
+        id: ownerId,
+      },
+    });
+
+    if (!owner) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Owner tidak ditemukan.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const priceStartValue = form.get("priceStart");
+    const priceValue = form.get("price");
+
+    if (!priceStartValue || !priceValue) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Harga wajib diisi.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const priceStart = BigInt(priceStartValue.toString());
+    const price = BigInt(priceValue.toString());
 
     // cek slug
     const existSlug = await prisma.product.findUnique({
@@ -197,33 +270,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           status: false,
-          code: 400,
           message: "Slug sudah digunakan.",
         },
         { status: 400 }
       );
-    }
-
-    // ==========================
-    // UPLOAD THUMBNAIL
-    // ==========================
-
-    let thumbnailPath = "";
-
-    if (thumbnail && thumbnail.size > 0) {
-      if (!isImage(thumbnail)) {
-        return NextResponse.json(
-          {
-            status: false,
-            message: "Thumbnail harus berupa gambar.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      thumbnailPath = await saveImage(thumbnail, "products");
     }
 
     // ==========================
@@ -237,9 +287,35 @@ export async function POST(req: NextRequest) {
 
       if (!isImage(image)) continue;
 
-      const path = await saveImage(image, "products");
+      imagePaths.push(await saveImage(image, "products"));
+    }
 
-      imagePaths.push(path);
+    let thumbnailPath = "";
+
+    if (thumbnail && thumbnail.size > 0) {
+      if (!isImage(thumbnail)) {
+        return NextResponse.json(
+          {
+            status: false,
+            message: "Thumbnail harus berupa gambar.",
+          },
+          { status: 400 }
+        );
+      }
+
+      thumbnailPath = await saveImage(thumbnail, "products");
+    } else if (imagePaths.length > 0) {
+      thumbnailPath = imagePaths[0];
+    }
+
+    if (!thumbnailPath) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Thumbnail wajib diisi.",
+        },
+        { status: 400 }
+      );
     }
 
     // ==========================
@@ -250,15 +326,36 @@ export async function POST(req: NextRequest) {
       const product = await tx.product.create({
         data: {
           categoryId,
+          ownerId,
           createdBy: userId,
+
           name,
           slug,
-          description,
-          thumbnail: thumbnailPath,
-          price: new Prisma.Decimal(price),
+
           location,
+          address,
+          urlMaps,
+
+          description,
+
+          totalBedroom,
+          totalBathroom,
+          maxGuest,
+          wide,
+
+          priceStart,
+          price,
+
           stock,
+          capacity,
+
+          typeUnit,
+
           isActive,
+          thumbnail: thumbnailPath,
+
+          typeProperty,
+          typeBooking,
         },
       });
 
@@ -271,24 +368,40 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return await tx.product.findUnique({
+      return tx.product.findUnique({
         where: {
           id: product.id,
         },
         include: {
           category: true,
+          owner: true,
+          user: true,
           images: true,
+          items: true,
         },
       });
     });
 
+    if (!result) {
+      return responseError(new Error("Gagal membuat produk."));
+    }
+
+    const responseData = {
+      ...result,
+      thumbnail: fileUrl(result.thumbnail),
+      images: result.images.map((image) => ({
+        ...image,
+        image: image.image ? fileUrl(image.image) : null,
+      })),
+    };
+
     return NextResponse.json(
+      serializeBigInt(
       {
         status: true,
-        code: 201,
         message: "Produk berhasil dibuat.",
-        data: result,
-      },
+        data: responseData,
+      }),
       {
         status: 201,
       }
@@ -296,15 +409,6 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json(
-      {
-        status: false,
-        code: 500,
-        message: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return responseError(error);
   }
 }

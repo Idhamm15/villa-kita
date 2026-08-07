@@ -2,6 +2,7 @@ import Image from "next/image";
 import { FaClock } from "react-icons/fa";
 
 interface VillaCardProps {
+  id: string;
   image: string;
   title: string;
   location: string;
@@ -9,13 +10,14 @@ interface VillaCardProps {
 }
 
 export default function VillaCard({
+  id,
   image,
   title,
   location,
   price,
 }: VillaCardProps) {
   return (
-    <div className="overflow-hidden rounded-xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <div className="overflow-hidden rounded-xl bg-white shadow-2xl transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-60 w-full">
         <Image
           src={image}
@@ -48,6 +50,13 @@ export default function VillaCard({
           </span>
           <span className="text-gray-500"> / malam</span>
         </div>
+
+        <a
+          href={`/liburan/${id}`}
+          className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700"
+        >
+          Lihat Detail
+        </a>
       </div>
     </div>
   );

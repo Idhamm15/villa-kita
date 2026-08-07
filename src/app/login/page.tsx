@@ -1,16 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Swal from "sweetalert2";
-import Link from "next/link";
+import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,6 +15,7 @@ export default function LoginPage() {
   const handleLogin = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
+      console.count("HANDLE LOGIN");
     e.preventDefault();
 
     try {
@@ -37,7 +35,7 @@ export default function LoginPage() {
         }
       );
 
-     const result = await response.json();
+      const result = await response.json();
 
       if (!result.status) {
         await Swal.fire({
@@ -49,36 +47,22 @@ export default function LoginPage() {
         return;
       }
 
-      // simpan token
-      Cookies.set(
-        "access_token",
-        result.data.access_token
-      );
+      Cookies.set("access_token", result.data.access_token);
+      Cookies.set("refresh_token", result.data.refresh_token);
+      Cookies.set("token", result.data.access_token);
+      Cookies.set("role", result.data.user.role);
 
-      Cookies.set(
-        "refresh_token",
-        result.data.refresh_token
-      );
+      // localStorage.setItem("token", result.data.access_token);
+      // localStorage.setItem("user", JSON.stringify(result.data.user));
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(result.data.user)
-      );
+      toast.success("Login berhasil");
 
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-      });
+      console.log("User role:", result.data.user?.role);
 
-      await Toast.fire({
-        icon: "success",
-        title: "Login berhasil",
-      });
-
-      window.location.replace("/dashboard");
+      window.location.href =
+        result.data.user.role === "ADMIN" || result.data.user.role === "OWNER"
+          ? "/dashboard"
+          : "/";
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan saat login");
@@ -117,7 +101,7 @@ export default function LoginPage() {
             </div>
 
             {/* Form */}
-            <form className="mt-10 space-y-6">
+            <form className="mt-10 space-y-6" onSubmit={handleLogin}>
             {/* Email */}
             <div className="rounded-xl border border-sky-500 px-5 py-3">
                 <label className="block text-sm text-gray-500">
@@ -126,6 +110,8 @@ export default function LoginPage() {
 
                 <input
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.currentTarget.value)}
                     placeholder="example@email.com"
                     className="mt-1 w-full border-none bg-transparent text-lg text-gray-700 font-semibold outline-none"
                 />
@@ -140,6 +126,8 @@ export default function LoginPage() {
                 <div className="mt-1 flex items-center">
                 <input
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.currentTarget.value)}
                     placeholder="••••••••"
                     className="w-full border-none bg-transparent text-lg font-semibold outline-none text-gray-700"
                 />
@@ -179,9 +167,11 @@ export default function LoginPage() {
 
             {/* Button */}
             <button
-                className="w-full rounded-lg bg-sky-500 py-4 text-xl font-semibold text-white transition hover:bg-sky-700"
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-sky-500 py-4 text-xl font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
-                Sign In
+                {loading ? "Loading..." : "Sign In"}
             </button>
             </form>
 

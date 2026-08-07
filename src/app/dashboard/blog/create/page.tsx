@@ -289,11 +289,11 @@ const handleFileSelect = async (
               <span>Kembali</span>
               </button>
               <h1 className="text-3xl font-bold text-gray-900">
-                Tambah Artikel
+                Tambah Blog
               </h1>
 
               <p className="text-gray-500 mt-1">
-                Buat artikel baru untuk website
+                Buat blog baru untuk website
               </p>
             </div>
           </div>

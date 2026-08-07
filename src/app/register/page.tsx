@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Swal from "sweetalert2";
 import Link from "next/link";
 import Cookies from "js-cookie";
@@ -8,14 +7,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function RegisterPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (
+  const handleRegister = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
@@ -24,7 +22,7 @@ export default function LoginPage() {
       setLoading(true);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_URL}/auth/login`,
+        `${process.env.NEXT_PUBLIC_URL}/auth/register`,
         {
           method: "POST",
           headers: {
@@ -42,7 +40,7 @@ export default function LoginPage() {
       if (!result.status) {
         await Swal.fire({
           icon: "error",
-          title: "Login Gagal",
+          title: "Register Gagal",
           text: result.message,
         });
 

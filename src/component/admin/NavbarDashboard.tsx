@@ -1,11 +1,8 @@
- // app/components/dashboard/Header.tsx
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
-  faDownload,
-  faFileLines,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface HeaderProps {

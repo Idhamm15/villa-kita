@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Cookies from "js-cookie";
-import Swal from "sweetalert2";
 import {
   LayoutDashboard,
   Newspaper,
@@ -17,6 +15,7 @@ import {
   ShoppingCart,
   FileText,
 } from "lucide-react";
+import useLogout from "@/handle/handleAuth";
 
 interface NavbarProps {
   sidebarOpen: boolean;
@@ -27,25 +26,7 @@ export default function HeaderDashboard({
   sidebarOpen,
   onCloseSidebar,
 }: NavbarProps) {
-  const handleLogout = async () => {
-    const result = await Swal.fire({
-      title: "Logout?",
-      text: "Anda yakin ingin keluar?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Ya, Logout",
-      cancelButtonText: "Batal",
-    });
-
-    if (!result.isConfirmed) return;
-
-    Cookies.remove("access_token");
-    Cookies.remove("refresh_token");
-    localStorage.removeItem("user");
-
-    window.location.replace("/login");
-  };
-
+  const { handleLogout } = useLogout();
   return (
     <>
       {/* Overlay */}
@@ -176,7 +157,7 @@ export default function HeaderDashboard({
             </div>
 
             <button
-              onClick={handleLogout}
+              onClick={() => handleLogout()}
               className="mt-3 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-red-600 transition hover:bg-red-500 hover:text-white"
             >
               <LogOut size={20} />

@@ -1,104 +1,85 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { Prisma, TypeBooking, TypeProperty } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { saveImage, deleteImage, isImage } from "@/lib/upload";
 import { fileUrl } from "@/lib/url";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { responseError, serializeBigInt } from "@/lib/helper";
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-
-  const product = await prisma.product.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      category: true,
-      images: true,
-    },
-  });
-
-  if (!product) {
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Produk tidak ditemukan",
-      },
-      {
-        status: 404,
-      }
-    );
-  }
-
-  return NextResponse.json({
-    status: true,
-    data: {
-      ...product,
-      thumbnail: fileUrl(product.thumbnail),
-      images: product.images.map((item) => ({
-        ...item,
-        image: fileUrl(item.image),
-      })),
-    },
-  });
-}
-
-export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
 
-    const form = await req.formData();
-
-    const token = req.cookies.get("token")?.value;
-  
-      if (!token) {
-        return NextResponse.json(
-          {
-            status: false,
-            message: "Unauthorized",
-          },
-          {
-            status: 401,
-          }
-        );
-      }
-  
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-
-    const userId = payload.id;
-
-    const categoryId = form.get("categoryId") as string;
-    const name = form.get("name") as string;
-    const slug = form.get("slug") as string;
-    const description = form.get("description") as string;
-    const price = form.get("price") as string;
-    const location = form.get("location") as string;
-    const stock = Number(form.get("stock") ?? 1);
-    const isActive = (form.get("isActive") ?? "true") === "true";
-
-    const thumbnail = form.get("thumbnail") as File;
-    const images = form.getAll("images") as File[];
-
-    const oldProduct = await prisma.product.findUnique({
+    const product = await prisma.product.findUnique({
       where: {
         id,
       },
       include: {
+        category: true,
+        owner: true,
+        user: true,
         images: true,
+        items: true,
       },
     });
 
-    if (!oldProduct) {
+    if (!product) {
       return NextResponse.json(
         {
           status: false,
-          message: "Produk tidak ditemukan",
+          message: "Produk tidak ditemukan.",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      status: true,
+      data: serializeBigInt(product),
+    });
+  } catch (error) {
+    console.error(error);
+    return responseError(error);
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const form = await req.formData();
+
+    const token = req.cookies.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET!);
+
+    const product = await prisma.product.findUnique({
+      where: {
+        id: params.id,
+      },
+    });
+
+    if (!product) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Produk tidak ditemukan.",
         },
         {
           status: 404,
@@ -106,89 +87,140 @@ export async function PUT(
       );
     }
 
-    let thumbnailPath = oldProduct.thumbnail;
+    const categoryId = form.get("categoryId") as string;
+    const ownerId = form.get("ownerId") as string;
 
-    if (thumbnail && thumbnail.size > 0) {
-      if (!isImage(thumbnail)) {
-        return NextResponse.json(
-          {
-            status: false,
-            message: "Thumbnail harus berupa gambar",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
+    const name = form.get("name") as string;
+    const slug = form.get("slug") as string;
+    const description = form.get("description") as string;
 
-      if (oldProduct.thumbnail) {
-        await deleteImage(oldProduct.thumbnail);
-      }
+    const location = form.get("location") as string;
+    const address = form.get("address") as string;
+    const urlMaps = form.get("urlMaps") as string;
 
-      thumbnailPath = await saveImage(thumbnail, "products");
+    const totalBedroom = Number(form.get("totalBedroom"));
+    const totalBathroom = Number(form.get("totalBathroom"));
+    const maxGuest = Number(form.get("maxGuest"));
+    const wide = Number(form.get("wide"));
+
+    const priceStart = BigInt(form.get("priceStart") as string);
+    const price = BigInt(form.get("price") as string);
+
+    const stock = Number(form.get("stock") ?? 1);
+    const capacity = Number(form.get("capacity") ?? 1);
+
+    const typeUnit = form.get("typeUnit") as string;
+
+    const isActive = (form.get("isActive") ?? "true") === "true";
+
+    const typeProperty = form.getAll("typeProperty") as TypeProperty[];
+    const typeBooking = form.getAll("typeBooking") as TypeBooking[];
+
+    const images = form.getAll("images") as File[];
+
+    // cek slug
+    const slugExist = await prisma.product.findFirst({
+      where: {
+        slug,
+        NOT: {
+          id: params.id,
+        },
+      },
+    });
+
+    if (slugExist) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Slug sudah digunakan.",
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
-    const newImages: string[] = [];
+    const imagePaths: string[] = [];
 
     for (const image of images) {
       if (image.size === 0) continue;
 
       if (!isImage(image)) continue;
 
-      newImages.push(await saveImage(image, "products"));
+      imagePaths.push(await saveImage(image, "products"));
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const product = await tx.product.update({
+      const updated = await tx.product.update({
         where: {
-          id,
+          id: params.id,
         },
         data: {
           categoryId,
-          createdBy: userId,
+          ownerId,
+
           name,
           slug,
           description,
-          thumbnail: thumbnailPath,
+
           location,
+          address,
+          urlMaps,
+
+          totalBedroom,
+          totalBathroom,
+          maxGuest,
+          wide,
+
+          priceStart,
+          price,
+
           stock,
+          capacity,
+
+          typeUnit,
+
           isActive,
-          price: new Prisma.Decimal(price),
+
+          typeProperty,
+          typeBooking,
         },
       });
 
-      if (newImages.length > 0) {
+      if (imagePaths.length > 0) {
+        await tx.productImage.deleteMany({
+          where: {
+            productId: updated.id,
+          },
+        });
+
         await tx.productImage.createMany({
-          data: newImages.map((item) => ({
-            productId: id,
-            image: item,
+          data: imagePaths.map((image) => ({
+            productId: updated.id,
+            image,
           })),
         });
       }
 
-      return await tx.product.findUnique({
+      return tx.product.findUnique({
         where: {
-          id,
+          id: updated.id,
         },
         include: {
           category: true,
+          owner: true,
+          user: true,
           images: true,
+          items: true,
+          attachments: true,
         },
       });
     });
 
     return NextResponse.json({
       status: true,
-      message: "Produk berhasil diupdate",
-      data: {
-        ...result,
-        thumbnail: fileUrl(result?.thumbnail),
-        images:
-          result?.images.map((item) => ({
-            ...item,
-            image: fileUrl(item.image),
-          })) ?? [],
-      },
+      message: "Produk berhasil diperbarui.",
+      data: result,
     });
   } catch (error) {
     console.error(error);
@@ -207,17 +239,28 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const token = req.cookies.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET!);
 
     const product = await prisma.product.findUnique({
       where: {
-        id,
-      },
-      include: {
-        images: true,
+        id: params.id,
       },
     });
 
@@ -225,7 +268,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           status: false,
-          message: "Produk tidak ditemukan",
+          message: "Produk tidak ditemukan.",
         },
         {
           status: 404,
@@ -233,33 +276,15 @@ export async function DELETE(
       );
     }
 
-    // Hapus thumbnail
-    if (product.thumbnail) {
-      await deleteImage(product.thumbnail);
-    }
-
-    // Hapus semua gambar
-    for (const image of product.images) {
-      await deleteImage(image.image);
-    }
-
-    await prisma.$transaction(async (tx) => {
-      await tx.productImage.deleteMany({
-        where: {
-          productId: id,
-        },
-      });
-
-      await tx.product.delete({
-        where: {
-          id,
-        },
-      });
+    await prisma.product.delete({
+      where: {
+        id: params.id,
+      },
     });
 
     return NextResponse.json({
       status: true,
-      message: "Produk berhasil dihapus",
+      message: "Produk berhasil dihapus.",
     });
   } catch (error) {
     console.error(error);

@@ -15,20 +15,20 @@ const steps = [
     href: "/booking",
   },
   {
-    title: "Addon",
+    title: "Process",
     icon: Package,
-    href: "/booking/addon",
+    href: "/booking/process",
   },
   {
     title: "Pay",
     icon: CreditCard,
     href: "/booking/payment",
   },
-  {
-    title: "Finish",
-    icon: CircleCheckBig,
-    href: "/booking/success",
-  },
+  // {
+  //   title: "Finish",
+  //   icon: CircleCheckBig,
+  //   href: "/booking/success",
+  // },
 ];
 
 interface Props {

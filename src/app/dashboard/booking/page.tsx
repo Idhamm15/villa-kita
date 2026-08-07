@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import HeaderDashboard from "@/component/admin/HeaderDashboard";
 import NavbarDashboard from "@/component/admin/NavbarDashboard";
 import { apiFetch } from "@/lib/api";
-import { Pencil, Search, Trash2 } from "lucide-react";
+import { Eye, Pencil, Search, Trash2 } from "lucide-react";
 
 interface Owner {
   id: number;
@@ -132,7 +132,7 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Kelola Voucher
+                  Kelola Booking
                 </h1>
 
                 <p className="text-gray-500 mt-1">
@@ -153,7 +153,7 @@ export default function DashboardPage() {
 
                 <input
                   type="text"
-                  placeholder="Cari voucher..."
+                  placeholder="Cari booking..."
                   className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
@@ -237,11 +237,11 @@ export default function DashboardPage() {
                         <td>
                         <div className="flex justify-center items-center gap-2">
                             <a
-                            href={`/dashboard/voucher/edit/${owner.id}`}
+                            href={`/dashboard/booking/${owner.id}`}
                             className="rounded-lg bg-blue-100 p-2 text-blue-600 transition hover:bg-blue-200"
                             title="Edit Owner"
                             >
-                            <Pencil size={18} />
+                            <Eye size={18} />
                             </a>
 
                             <button

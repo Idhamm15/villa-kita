@@ -1,66 +1,74 @@
-import { BookingStatus, Prisma, PrismaClient, Role } from "@prisma/client";
+import { BookingStatus, PaymentStatus, Prisma, PrismaClient, ProductItemType, Role, TypeBooking, TypeProperty } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Start seeding...");
+  console.log("Start seeding...");
 
-    // =========================
-    // USER
-    // =========================
-    const password = await bcrypt.hash("admin123", 10);
+  const password = await bcrypt.hash("password123", 10);
 
-    const admin = await prisma.user.upsert({
+  /*
+  |--------------------------------------------------------------------------
+  | Users
+  |--------------------------------------------------------------------------
+  */
+
+  const admin = await prisma.user.upsert({
     where: {
-        email: "admin@villakita.com",
+      email: "admin@villakita.com",
     },
-    update: {
-        username: "admin",
-        fullname: "Administrator",
-        phone: "081234567890",
-        address: "Jakarta",
-        isActive: true,
-    },
+    update: {},
     create: {
-        username: "admin",
-        fullname: "Administrator",
-        email: "admin@villakita.com",
-        password,
-        role: Role.ADMIN,
-        phone: "081234567890",
-        address: "Jakarta",
-        isActive: true,
+      username: "admin",
+      fullname: "Administrator",
+      email: "admin@villakita.com",
+      password,
+      role: Role.ADMIN,
+      phone: "081111111111",
+      address: "Jakarta",
     },
-    });
+  });
 
-    const user = await prisma.user.upsert({
+  const owner = await prisma.user.upsert({
     where: {
-        email: "user@villakita.com",
+      email: "owner@villakita.com",
     },
-    update: {
-        username: "johndoe",
-        fullname: "John Doe",
-        phone: "081298765432",
-        address: "Bogor",
-        isActive: true,
-    },
+    update: {},
     create: {
-        username: "johndoe",
-        fullname: "John Doe",
-        email: "user@villakita.com",
-        password,
-        role: Role.USER,
-        phone: "081298765432",
-        address: "Bogor",
-        isActive: true,
+      username: "owner",
+      fullname: "Villa Owner",
+      email: "owner@villakita.com",
+      password,
+      role: Role.OWNER,
+      phone: "082222222222",
+      address: "Bandung",
     },
-    });
+  });
 
-  // =========================
-  // CATEGORY
-  // =========================
-  const villaCategory = await prisma.categoryProduct.upsert({
+  const user = await prisma.user.upsert({
+    where: {
+      email: "user@villakita.com",
+    },
+    update: {},
+    create: {
+      username: "user",
+      fullname: "Regular User",
+      email: "user@villakita.com",
+      password,
+      role: Role.USER,
+      phone: "083333333333",
+      address: "Surabaya",
+    },
+  });
+
+  /*
+  |--------------------------------------------------------------------------
+  | Category
+  |--------------------------------------------------------------------------
+  */
+
+  const villa = await prisma.categoryProduct.upsert({
     where: {
       slug: "villa",
     },
@@ -68,137 +76,255 @@ async function main() {
     create: {
       name: "Villa",
       slug: "villa",
-      description: "Kategori seluruh villa",
+      description: "Kategori Villa",
     },
   });
 
-  const tripCategory = await prisma.categoryProduct.upsert({
+  const hotel = await prisma.categoryProduct.upsert({
     where: {
-      slug: "trip",
+      slug: "hotel",
     },
     update: {},
     create: {
-      name: "Trip",
-      slug: "trip",
-      description: "Kategori paket trip",
+      name: "Hotel",
+      slug: "hotel",
+      description: "Kategori Hotel",
     },
   });
 
-  // =========================
-  // PRODUCT
-  // =========================
-  const villa = await prisma.product.upsert({
+  const apartment = await prisma.categoryProduct.upsert({
     where: {
-      slug: "villa-puncak",
+      slug: "apartment",
     },
     update: {},
     create: {
-      categoryId: villaCategory.id,
+      name: "Apartment",
+      slug: "apartment",
+      description: "Kategori Apartment",
+    },
+  });
+
+  /*
+  |--------------------------------------------------------------------------
+  | Product
+  |--------------------------------------------------------------------------
+  */
+
+  const product1 = await prisma.product.create({
+    data: {
+      categoryId: villa.id,
+
+      ownerId: owner.id,
       createdBy: admin.id,
-      name: "Villa Puncak",
-      slug: "villa-puncak",
-      description: "Villa nyaman dengan pemandangan pegunungan.",
-      thumbnail: "/uploads/villa-puncak.jpg",
-      price: new Prisma.Decimal(1500000),
-      location: "Puncak, Bogor",
+
+      name: "Villa Puncak Indah",
+
+      typeProperty: [TypeProperty.Villa],
+      typeBooking: [TypeBooking.Menginap],
+
+      location: "Puncak",
+      address: "Jl. Raya Puncak No. 1",
+      urlMaps: "https://maps.google.com",
+
+      totalBedroom: 4,
+      totalBathroom: 3,
+      maxGuest: 10,
+      wide: 250,
+
+      priceStart: 1000000,
+      price: 1500000,
+
+      slug: "villa puncak indah",
+
+      description:
+        "Villa nyaman dengan pemandangan pegunungan.",
+
+      typeUnit: "Entire Villa",
+
       stock: 5,
+      capacity: 10,
+
+      images: {
+        create: [
+          {
+            image: "/uploads/villa1.jpg",
+          },
+          {
+            image: "/uploads/villa2.jpg",
+          },
+        ],
+      },
     },
   });
 
-  const trip = await prisma.product.upsert({
-    where: {
-      slug: "trip-bromo",
-    },
-    update: {},
-    create: {
-      categoryId: tripCategory.id,
-      createdBy: admin.id,
-      name: "Open Trip Bromo",
-      slug: "trip-bromo",
-      description: "Paket wisata Bromo 2 Hari 1 Malam.",
-      thumbnail: "/uploads/bromo.jpg",
-      price: new Prisma.Decimal(750000),
-      location: "Bromo",
-      stock: 50,
-    },
-  });
+  /*
+  |--------------------------------------------------------------------------
+  | Product Item
+  |--------------------------------------------------------------------------
+  */
 
-  // =========================
-  // PRODUCT IMAGE
-  // =========================
-  await prisma.productImage.createMany({
+  await prisma.productItem.createMany({
     data: [
       {
-        productId: villa.id,
-        image: "/uploads/villa1.jpg",
+        productId: product1.id,
+        type: ProductItemType.FACILITY,
+        name: "Private Pool",
       },
       {
-        productId: villa.id,
-        image: "/uploads/villa2.jpg",
+        productId: product1.id,
+        type: ProductItemType.FACILITY,
+        name: "WiFi",
       },
       {
-        productId: trip.id,
-        image: "/uploads/trip1.jpg",
+        productId: product1.id,
+        type: ProductItemType.FACILITY,
+        name: "BBQ Area",
+      },
+
+      {
+        productId: product1.id,
+        type: ProductItemType.INCLUDE,
+        name: "Breakfast",
+      },
+      {
+        productId: product1.id,
+        type: ProductItemType.INCLUDE,
+        name: "Free Parking",
+      },
+
+      {
+        productId: product1.id,
+        type: ProductItemType.EXCLUDE,
+        name: "Lunch",
+      },
+      {
+        productId: product1.id,
+        type: ProductItemType.EXCLUDE,
+        name: "Airport Pickup",
       },
     ],
-    skipDuplicates: true,
   });
 
-  // =========================
-  // BLOG
-  // =========================
-  await prisma.blog.upsert({
-    where: {
-      slug: "tips-memilih-villa",
-    },
-    update: {},
-    create: {
-      title: "5 Tips Memilih Villa untuk Liburan",
-      slug: "tips-memilih-villa",
-      thumbnail: "/uploads/blog1.jpg",
-      content:
-        "<p>Memilih villa yang tepat akan membuat liburan semakin menyenangkan.</p>",
-      isPublished: true,
+  /*
+  |--------------------------------------------------------------------------
+  | Attachment
+  |--------------------------------------------------------------------------
+  */
+
+  await prisma.productAttachment.create({
+    data: {
+      productId: product1.id,
+      image: "brochure.pdf",
     },
   });
 
-  await prisma.blog.upsert({
-    where: {
-      slug: "rekomendasi-trip-bromo",
-    },
-    update: {},
-    create: {
-      title: "Rekomendasi Trip ke Bromo",
-      slug: "rekomendasi-trip-bromo",
-      thumbnail: "/uploads/blog2.jpg",
-      content:
-        "<p>Bromo merupakan salah satu destinasi wisata terbaik di Indonesia.</p>",
-      isPublished: true,
-    },
-  });
+  /*
+  |--------------------------------------------------------------------------
+  | Booking
+  |--------------------------------------------------------------------------
+  */
 
-  // =========================
-  // BOOKING
-  // =========================
   await prisma.booking.create({
     data: {
-      userId: user.id,
-      productId: villa.id,
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
+
+      product: {
+        connect: {
+          id: product1.id,
+        },
+      },
+
+      bookingCode: "BK202608010001",
+      orderId: "ORDER-202608010001",
+
+      nameGuest: "Budi Santoso",
+      email: "budi@gmail.com",
+      phone: "08123456789",
+
       checkIn: new Date("2026-08-01"),
       checkOut: new Date("2026-08-03"),
+
       totalGuest: 4,
-      totalPrice: new Prisma.Decimal(3000000),
+      totalPrice: BigInt(3000000),
+
       status: BookingStatus.PAID,
-      note: "Booking dari seeder",
+      paymentStatus: PaymentStatus.PAID,
+
+      paymentMethod: "bank_transfer",
+      transactionId: "TXN-202608010001",
+
+      paidAt: new Date(),
+
+      expiredAt: new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ),
+
+      note: "Late check in",
+    },
+  });
+  /*
+  |--------------------------------------------------------------------------
+  | Blog
+  |--------------------------------------------------------------------------
+  */
+
+  await prisma.blog.createMany({
+    data: [
+      {
+        title: "Tips Memilih Villa",
+        slug: "tips-memilih-villa",
+        thumbnail: "/uploads/blog1.jpg",
+        content: "Lorem ipsum dolor sit amet.",
+      },
+      {
+        title: "Liburan Bersama Keluarga",
+        slug: "liburan-keluarga",
+        thumbnail: "/uploads/blog2.jpg",
+        content: "Lorem ipsum dolor sit amet.",
+      },
+    ],
+  });
+
+  /*
+  |--------------------------------------------------------------------------
+  | Voucher
+  |--------------------------------------------------------------------------
+  */
+
+  await prisma.voucher.create({
+    data: {
+      code: "WELCOME10",
+      description: "Diskon 10%",
+      discount: 10,
+      minPurchase: 1000000,
+      dateExpired: new Date("2027-01-01"),
+      status: true,
     },
   });
 
-  console.log("✅ Seeder selesai.");
+  /*
+  |--------------------------------------------------------------------------
+  | Partner
+  |--------------------------------------------------------------------------
+  */
+
+  await prisma.partner.create({
+    data: {
+      image: "partner.png",
+      status: true,
+    },
+  });
+
+  console.log("✅ Seeding selesai");
 }
 
 main()
-  .catch((err) => {
-    console.error(err);
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

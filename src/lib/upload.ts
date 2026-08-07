@@ -31,7 +31,9 @@ export async function saveImage(
   return `/uploads/${folder}/${filename}`;
 }
 
-export async function deleteImage(filepath: string) {
+export async function deleteImage(filepath?: string) {
+  if (!filepath) return;
+
   try {
     const fullpath = path.join(
       process.cwd(),
@@ -40,9 +42,30 @@ export async function deleteImage(filepath: string) {
     );
 
     await fs.unlink(fullpath);
-  } catch {}
+  } catch (error) {
+    console.error("Gagal menghapus gambar:", error);
+  }
 }
-
 export function isImage(file: File) {
   return file.type.startsWith("image/");
+}
+
+export function imageUrl(path?: string | null) {
+  if (!path) return null;
+
+  // Sudah berupa URL lengkap
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  if (path.startsWith("/")) {
+    return path;
+  }
+
+  const baseUrl =
+    process.env.NEXT_APP_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "";
+
+  return `${baseUrl}/${path}`;
 }

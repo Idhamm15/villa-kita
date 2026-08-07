@@ -1,41 +1,67 @@
 "use client";
 
-import { useState } from "react";
+interface BookingVisitorTypeProps {
+  value: "SELF" | "SOMEONE_ELSE";
+  onChange: (value: "SELF" | "SOMEONE_ELSE") => void;
+}
 
-export default function BookingVisitorType() {
-  const [type, setType] = useState("self");
-
+export default function BookingVisitorType({
+  value,
+  onChange,
+}: BookingVisitorTypeProps) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-lg">
-
       <div className="grid gap-6 md:grid-cols-2">
 
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border p-5 transition hover:border-blue-500">
-
+        <label
+          className={`flex cursor-pointer items-start gap-3 rounded-xl border p-5 transition ${
+            value === "SELF"
+              ? "border-blue-600 bg-blue-50"
+              : "hover:border-blue-500"
+          }`}
+        >
           <input
             type="radio"
-            checked={type === "self"}
-            onChange={() => setType("self")}
+            checked={value === "SELF"}
+            onChange={() => onChange("SELF")}
           />
 
-          <span>I am the visitor</span>
+          <div>
+            <p className="font-semibold">
+              Saya akan Menginap/Trip
+            </p>
 
+            <p className="text-sm text-gray-500">
+              Pemesan dan tamu yang menginap/trip adalah orang yang sama.
+            </p>
+          </div>
         </label>
 
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border p-5 transition hover:border-blue-500">
-
+        <label
+          className={`flex cursor-pointer items-start gap-3 rounded-xl border p-5 transition ${
+            value === "SOMEONE_ELSE"
+              ? "border-blue-600 bg-blue-50"
+              : "hover:border-blue-500"
+          }`}
+        >
           <input
             type="radio"
-            checked={type === "other"}
-            onChange={() => setType("other")}
+            checked={value === "SOMEONE_ELSE"}
+            onChange={() => onChange("SOMEONE_ELSE")}
           />
 
-          <span>I am booking for someone else</span>
+          <div>
+            <p className="font-semibold">
+              Saya memesan untuk orang lain
+            </p>
 
+            <p className="text-sm text-gray-500">
+              Booking ini ditujukan untuk tamu lain yang akan menginap/trip.
+            </p>
+          </div>
         </label>
 
       </div>
-
     </div>
   );
 }

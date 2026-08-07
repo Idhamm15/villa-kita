@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 interface CategoryProduct {
   id: number;
   name: string;
+  description: string;
   created_at: string;
   updated_at: string;
 }
@@ -80,15 +81,15 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Kategori Produk
+                  Kategori Properti
                 </h1>
 
                 <p className="text-gray-500 mt-1">
-                  Kelola Kategori Properti/Produk
+                  Kelola Kategori Properti
                 </p>
               </div>
 
-              <a href="/dashboard/management-blog/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
+              <a href="/dashboard/category-product/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
                 + Tambah Kategori
               </a>
             </div>
@@ -106,6 +107,7 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="py-4 text-left text-gray-600">Nama</th>
+                    <th className="py-4 text-left text-gray-600">Deskirpsi</th>
                     <th className="py-4 text-center text-gray-600">Aksi</th>
                   </tr>
                 </thead>
@@ -137,11 +139,14 @@ export default function DashboardPage() {
                         <td className="py-4 font-medium">
                           {category.name}
                         </td>
+                        <td className="py-4 font-medium">
+                          {category.description}
+                        </td>
 
                         <td>
                         <div className="flex justify-center items-center gap-2">
                             <a
-                            href={`/dashboard/manage-owner/edit/${category.id}`}
+                            href={`/dashboard/category-product/edit/${category.id}`}
                             className="rounded-lg bg-blue-100 p-2 text-blue-600 transition hover:bg-blue-200"
                             title="Edit Owner"
                             >

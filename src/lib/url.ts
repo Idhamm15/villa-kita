@@ -1,7 +1,15 @@
 export function fileUrl(path?: string | null) {
   if (!path) return null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
 
-  return `${baseUrl}${path}`;
+  if (path.startsWith("/")) {
+    return path;
+  }
+
+  const baseUrl = process.env.NEXT_APP_URL || "http://localhost:3000";
+
+  return `${baseUrl}/${path}`;
 }

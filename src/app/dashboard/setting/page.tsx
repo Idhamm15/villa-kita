@@ -1,267 +1,292 @@
 "use client";
 
-
-import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { useState } from "react";
+import Image from "next/image";
 import HeaderDashboard from "@/component/admin/HeaderDashboard";
 import NavbarDashboard from "@/component/admin/NavbarDashboard";
-import { apiFetch } from "@/lib/api";
-import InMaintenance from "@/component/InMaintenance";
-import { Settings } from "lucide-react";
+import { ArrowLeft, Settings, Camera } from "lucide-react";
 
+export default function Page() {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [preview, setPreview] = useState<string | null>(null);
 
-interface Blog {
-  id: number;
-  user_id: number;
-  title: string;
-  slug: string | null;
-  excerpt: string | null;
-  body: string;
-  thumbnail_url: string | null;
-  status: string;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+    const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-export default function DashboardPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+        setPreview(URL.createObjectURL(file));
+    };
 
-  const [page, setPage] = useState(1);
+    return (
+        <div className="min-h-screen bg-white flex overflow-hidden">
 
-  const [pagination, setPagination] = useState({
-    current_page: 1,
-    per_page: 10,
-    total_data: 0,
-    total_pages: 1,
-    has_next_page: false,
-    has_prev_page: false,
-  });
+            {/* Sidebar */}
+            <HeaderDashboard
+                sidebarOpen={sidebarOpen}
+                onCloseSidebar={() => setSidebarOpen(false)}
+            />
 
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
+            {/* Main */}
+            <main className="flex-1 overflow-y-auto p-4 md:p-6">
 
-      const result = await apiFetch(
-        `/blog?page=${page}&limit=10`
-      );
+                <NavbarDashboard
+                    onOpenSidebar={() => setSidebarOpen(true)}
+                />
 
-      if (result.status) {
-        setBlogs(result.data);
-        setPagination(result.pagination);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+                <div className="rounded-3xl bg-gray-100 p-10">
 
-  useEffect(() => {
-    fetchBlogs();
-  }, [page]);
+                    {/* Header */}
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.title
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+                    <div className="mb-8">
 
-  return (
-    <div className="min-h-screen bg-white flex overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => history.back()}
+                            className="mb-5 flex items-center gap-2 text-gray-500 hover:text-blue-600"
+                        >
+                            <ArrowLeft size={22} />
+                            <span>Kembali</span>
+                        </button>
 
-      {/* Sidebar */}
-      <HeaderDashboard
-        sidebarOpen={sidebarOpen}
-        onCloseSidebar={() => setSidebarOpen(false)}
-      />
+                        <h1 className="text-3xl font-bold">
+                            Pengaturan
+                        </h1>
 
-      {/* Main */}
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+                        <p className="mt-2 text-gray-500">
+                            Kelola informasi profil akun administrator.
+                        </p>
 
-        {/* Header */}
-        <NavbarDashboard
-          onOpenSidebar={() => setSidebarOpen(true)}
-        />
+                    </div>
 
-        {/* Content */}
-        <div className="bg-gray-100 rounded-3xl p-6">
+                    {/* Banner */}
 
-        <InMaintenance
-          icon={Settings}
-          title="Pengaturan Umum"
-          description="Fitur pengaturan sedang dalam pengembangan."
-        />
+                    <div className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
 
-          {/* <div className="bg-white rounded-3xl p-6 border border-gray-200">
+                        <div className="flex items-center gap-5 px-8 py-7">
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Pengaturan
-                </h1>
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
 
-                <p className="text-gray-500 mt-1">
-                  Kelola artikel website perusahaan
-                </p>
-              </div>
+                                <Settings
+                                    size={30}
+                                    className="text-white"
+                                />
 
-              <a href="/dashboard/management-blog/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
-                + Tambah Artikel
-              </a>
-            </div>
+                            </div>
 
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Cari artikel..."
-                className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+                            <div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="py-4 text-left text-gray-600">Judul</th>
-                    <th className="py-4 text-left text-gray-600">Penulis</th>
-                    <th className="py-4 text-left text-gray-600">Status</th>
-                    <th className="py-4 text-left text-gray-600">Tanggal</th>
-                    <th className="py-4 text-center text-gray-600">Aksi</th>
-                  </tr>
-                </thead>
+                                <h2 className="text-3xl font-bold text-white">
+                                    Profil Administrator
+                                </h2>
 
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={5} className="py-10">
-                        <div className="flex items-center justify-center">
-                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#01085a]"></div>
+                                <p className="mt-1 text-blue-100">
+                                    Perbarui informasi akun administrator.
+                                </p>
+
+                            </div>
+
                         </div>
-                      </td>
-                    </tr>
-                  ) : filteredBlogs.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="py-10 text-center text-gray-500"
-                      >
-                        Tidak ada data
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredBlogs.map((blog) => (
-                      <tr
-                        key={blog.id}
-                        className="border-b border-gray-100"
-                      >
-                        <td className="py-4 font-medium">
-                          {blog.title}
-                        </td>
 
-                        <td>Admin</td>
+                    </div>
 
-                        <td>
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm ${
-                              blog.status === "published"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {blog.status}
-                          </span>
-                        </td>
+                    {/* Form */}
 
-                        <td>
-                          {new Date(blog.created_at).toLocaleDateString(
-                            "id-ID",
-                            {
-                              day: "2-digit",
-                              month: "long",
-                              year: "numeric",
-                            }
-                          )}
-                        </td>
+                    <form className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-                        <td>
-                          <div className="flex justify-center gap-2">
-                            <a
-                              href={`/dashboard/management-blog/edit/${blog.slug}`}
-                              className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg"
+                        {/* Header */}
+
+                        <div className="border-b border-gray-200 px-8 py-6">
+
+                            <div className="flex items-center gap-3">
+
+                                <div className="h-10 w-1 rounded-full bg-blue-600" />
+
+                                <div>
+
+                                    <h2 className="text-2xl font-bold">
+                                        Informasi Profil
+                                    </h2>
+
+                                    <p className="text-gray-500">
+                                        Lengkapi data administrator.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div className="space-y-8 p-8">
+
+                            {/* Foto */}
+
+                            <div>
+
+                                <label className="mb-3 block font-semibold">
+                                    Foto Profil
+                                </label>
+
+                                <div className="flex items-center gap-6">
+
+                                    <div className="relative h-32 w-32 overflow-hidden rounded-full border border-gray-300 bg-gray-100">
+
+                                        {preview ? (
+                                            <Image
+                                                src={preview}
+                                                alt="Preview"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-full items-center justify-center text-gray-400">
+                                                <Camera size={40} />
+                                            </div>
+                                        )}
+
+                                    </div>
+
+                                    <div className="flex-1">
+
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImage}
+                                            className="block w-full rounded-xl border border-gray-300 file:mr-4 file:rounded-xl file:border-0 file:bg-blue-100 file:px-5 file:py-3 file:font-semibold file:text-blue-700"
+                                        />
+
+                                        <p className="mt-2 text-sm text-gray-500">
+                                            JPG, PNG atau WEBP (Max 2MB)
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div className="grid gap-6 md:grid-cols-2">
+
+                                <div>
+
+                                    <label className="mb-2 block font-semibold">
+                                        Nama Lengkap
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        defaultValue="Administrator"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none"
+                                    />
+
+                                </div>
+
+                                <div>
+
+                                    <label className="mb-2 block font-semibold">
+                                        Username
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        defaultValue="admin"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none"
+                                    />
+
+                                </div>
+
+                                <div>
+
+                                    <label className="mb-2 block font-semibold">
+                                        Email
+                                    </label>
+
+                                    <input
+                                        type="email"
+                                        defaultValue="admin@example.com"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none"
+                                    />
+
+                                </div>
+
+                                <div>
+
+                                    <label className="mb-2 block font-semibold">
+                                        No. Telepon
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        defaultValue="081234567890"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none"
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            <hr />
+
+                            <div className="grid gap-6 md:grid-cols-2">
+
+                                <div>
+
+                                    <label className="mb-2 block font-semibold">
+                                        Password Baru
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        placeholder="Kosongkan jika tidak diubah"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none"
+                                    />
+
+                                </div>
+
+                                <div>
+
+                                    <label className="mb-2 block font-semibold">
+                                        Konfirmasi Password
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        placeholder="Ulangi password baru"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none"
+                                    />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {/* Footer */}
+
+                        <div className="flex justify-end gap-4 border-t border-gray-200 bg-gray-50 px-8 py-6">
+
+                            <button
+                                type="button"
+                                className="rounded-xl border border-gray-300 px-8 py-3 font-semibold hover:bg-gray-100"
                             >
-                              Edit
-                            </a>
-
-                            <button className="bg-red-100 text-red-700 px-3 py-2 rounded-lg">
-                              Delete
+                                Batal
                             </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
 
-              </table>
+                            <button
+                                type="submit"
+                                className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-10 py-3 font-semibold text-white hover:opacity-90"
+                            >
+                                Simpan Perubahan
+                            </button>
 
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
-  
-                <div className="text-sm text-gray-500">
-                  Menampilkan halaman {pagination.current_page} dari{" "}
-                  {pagination.total_pages}
-                  <span className="ml-2">
-                    ({pagination.total_data} data)
-                  </span>
+                        </div>
+
+                    </form>
+
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={!pagination.has_prev_page}
-                    onClick={() => setPage(page - 1)}
-                    className="px-4 py-2 rounded-lg border disabled:opacity-50"
-                  >
-                    Sebelumnya
-                  </button>
-
-                  {Array.from(
-                    { length: pagination.total_pages },
-                    (_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => setPage(i + 1)}
-                        className={`px-4 py-2 rounded-lg ${
-                          page === i + 1
-                            ? "bg-blue-600 text-white"
-                            : "border"
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    )
-                  )}
-
-                  <button
-                    disabled={!pagination.has_next_page}
-                    onClick={() => setPage(page + 1)}
-                    className="px-4 py-2 rounded-lg border disabled:opacity-50"
-                  >
-                    Berikutnya
-                  </button>
-                </div>
-
-              </div>
-
-
-            </div>
-
-          </div> */}
+            </main>
 
         </div>
-      </main>
-    </div>
-  );
+    );
 }

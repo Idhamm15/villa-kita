@@ -84,16 +84,16 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Kategori Produk
+                  Kelola Properti
                 </h1>
 
                 <p className="text-gray-500 mt-1">
-                  Kelola Kategori Properti/Produk
+                  Kelola Kategori Properti
                 </p>
               </div>
 
-              <a href="/dashboard/management-blog/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
-                + Tambah Kategori
+              <a href="/dashboard/product/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition">
+                + Tambah Properti
               </a>
             </div>
 
@@ -150,12 +150,6 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-4 font-medium">
                           {product.location}
-                        </td>
-                        <td className="py-4 font-medium">
-                          {product.name}
-                        </td>
-                        <td className="py-4 font-medium">
-                          {product.name}
                         </td>
                         <td className="py-4 font-medium">
                           {product.name}

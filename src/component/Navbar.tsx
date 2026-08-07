@@ -2,16 +2,62 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   FaHome,
   FaBookmark,
   FaPen,
   FaPhone,
+  FaUmbrellaBeach,
 } from "react-icons/fa";
-import { FaHouse } from "react-icons/fa6";
+import UserDropdown from "./UserDropdown";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
   const pathname = usePathname();
+
+  const [user, setUser] = useState<{
+    name: string;
+    image?: string;
+  } | null>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+
+        const token = Cookies.get("access_token");
+        
+        const res = await fetch("/api/auth/me", {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const json = await res.json();
+
+        if (res.ok && json.status && json.data) {
+          setUser({
+            name: json.data.fullname || json.data.username || "User",
+            image: json.data.image || undefined,
+          });
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error(error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const menus = [
     {
@@ -20,9 +66,9 @@ export default function Navbar() {
       icon: FaHome,
     },
     {
-      title: "Sewa Villa",
-      href: "/sewa-villa",
-      icon: FaHouse,
+      title: "Liburan",
+      href: "/liburan",
+      icon: FaUmbrellaBeach,
     },
     {
       title: "Blog",
@@ -41,9 +87,12 @@ export default function Navbar() {
     },
   ];
 
+  const isLogin = !!user;
+
   return (
     <header className="w-full bg-white shadow-sm">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+
         {/* Logo */}
         <Link
           href="/"
@@ -80,13 +129,24 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Login */}
-        <Link
-          href="/login"
-          className="rounded-lg bg-gray-300 px-8 py-3 text-lg font-semibold text-white transition hover:bg-gray-400"
-        >
-          Login
-        </Link>
+        {/* Right Side */}
+        <div className="flex items-center">
+          {loading ? (
+            <div className="h-11 w-11 animate-pulse rounded-full bg-gray-200" />
+          ) : isLogin ? (
+            <UserDropdown
+              name={user!.name}
+              image={user!.image}
+            />
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-lg bg-gray-300 px-8 py-3 text-lg font-semibold text-white transition hover:bg-gray-400"
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );

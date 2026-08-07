@@ -214,7 +214,7 @@ export default function DashboardPage() {
                         <td>
                         <div className="flex justify-center items-center gap-2">
                             <a
-                            href={`/dashboard/voucher/edit/${owner.id}`}
+                            href={`/dashboard/blog/edit/${owner.id}`}
                             className="rounded-lg bg-blue-100 p-2 text-blue-600 transition hover:bg-blue-200"
                             title="Edit Owner"
                             >
