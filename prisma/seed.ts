@@ -118,31 +118,36 @@ async function main() {
       createdBy: admin.id,
 
       name: "Villa Puncak Indah",
+      slug: "villa-puncak-indah",
 
-      typeProperty: [TypeProperty.Villa],
-      typeBooking: [TypeBooking.Menginap],
+      thumbnail: "/uploads/villa1.jpg",
+
+      description:
+        "Villa nyaman dengan pemandangan pegunungan.",
 
       location: "Puncak",
       address: "Jl. Raya Puncak No. 1",
       urlMaps: "https://maps.google.com",
+
+      typeProperty: [TypeProperty.Villa],
+      typeBooking: [TypeBooking.Menginap],
 
       totalBedroom: 4,
       totalBathroom: 3,
       maxGuest: 10,
       wide: 250,
 
-      priceStart: 1000000,
-      price: 1500000,
+      priceStart: BigInt(1000000),
+      price: BigInt(1500000),
 
-      slug: "villa puncak indah",
-
-      description:
-        "Villa nyaman dengan pemandangan pegunungan.",
+      serviceFee: BigInt(5000),
 
       typeUnit: "Entire Villa",
 
       stock: 5,
       capacity: 10,
+
+      isActive: true,
 
       images: {
         create: [
@@ -203,19 +208,6 @@ async function main() {
         name: "Airport Pickup",
       },
     ],
-  });
-
-  /*
-  |--------------------------------------------------------------------------
-  | Attachment
-  |--------------------------------------------------------------------------
-  */
-
-  await prisma.productAttachment.create({
-    data: {
-      productId: product1.id,
-      image: "brochure.pdf",
-    },
   });
 
   /*
