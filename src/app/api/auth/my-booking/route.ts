@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
         product: {
           select: {
             id: true,
-            title: true,
+            name: true,
             slug: true,
             thumbnail: true,
             price: true,

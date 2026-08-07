@@ -23,7 +23,16 @@ export async function GET(
         userId: user.id,
       },
       include: {
-        product: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            thumbnail: true,
+            price: true,
+            location: true,
+          },
+        },
         user: {
           select: {
             id: true,
