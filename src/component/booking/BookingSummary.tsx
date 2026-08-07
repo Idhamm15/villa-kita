@@ -22,16 +22,18 @@ interface BookingSummaryProps {
   };
 
   product: {
+    id: string;
     name?: string;
-    thumbnail?: string
+    thumbnail?: string;
     roomName?: string;
     capacity?: number;
     price: number;
     serviceFee?: number;
   };
 
-  onApplyVoucher?: () => void;
+  onPriceChange?: (price: number) => void;
 
+  onApplyVoucher?: () => void;
   onVoucherChange?: (value: string) => void;
 }
 
@@ -104,12 +106,12 @@ export default function BookingSummary({
           <div className="relative h-24 w-24 overflow-hidden rounded-xl">
 
             <Image
-              src={product.thumbnail}
-              alt={product.name}
+              src={product.thumbnail ?? "/images/no-image.png"}
+              alt={product.name ?? "Product Image"}
               fill
               className="object-cover"
             />
-
+            
           </div>
 
           <div className="flex-1">

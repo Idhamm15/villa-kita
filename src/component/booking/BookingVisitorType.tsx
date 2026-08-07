@@ -1,8 +1,10 @@
 "use client";
 
+type VisitorType = "SELF" | "SOMEONE_ELSE";
+
 interface BookingVisitorTypeProps {
-  value: "SELF" | "SOMEONE_ELSE";
-  onChange: (value: "SELF" | "SOMEONE_ELSE") => void;
+  value: VisitorType;
+  onChange: (value: VisitorType) => void;
 }
 
 export default function BookingVisitorType({

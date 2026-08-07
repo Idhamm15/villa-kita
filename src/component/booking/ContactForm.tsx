@@ -1,5 +1,7 @@
 "use client";
 
+type VisitorType = "SELF" | "SOMEONE_ELSE";
+
 interface BookingForm {
   nameGuest: string;
   email: string;
@@ -8,26 +10,23 @@ interface BookingForm {
   checkOut: string;
   totalGuest: number;
   note: string;
+
 }
 
-interface ContactFormProps {
-  value: BookingForm;
-  onChange: React.Dispatch<
-    React.SetStateAction<BookingForm>
-  >;
+interface ContactFormProps<T extends BookingForm> {
+  value: T;
+  onChange: React.Dispatch<React.SetStateAction<T>>;
   loading: boolean;
   onSubmit: () => void;
 }
 
-export default function ContactForm({
+export default function ContactForm<T extends BookingForm>({
   value,
   onChange,
   loading,
   onSubmit,
-}: ContactFormProps) {
-  const handleChange = <
-    K extends keyof BookingForm
-  >(
+}: ContactFormProps<T>) {
+  const handleChange = <K extends keyof BookingForm>(
     key: K,
     val: BookingForm[K]
   ) => {

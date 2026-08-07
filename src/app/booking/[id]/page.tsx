@@ -25,8 +25,11 @@ export default function BookingPage() {
   // };
 
   const [currentUser, setCurrentUser] = useState<{
-    fullname: string;
-    role?: string;
+    user: {
+      fullname: string;
+      role: string;
+      email?: string;
+    };
   } | null>(null);
   
 
@@ -47,8 +50,11 @@ export default function BookingPage() {
 
         if (res.ok && json.status && json.data) {
           setCurrentUser({
-            fullname: json.data.name || json.data.fullname || "User",
-            role: json.data.role || undefined,
+            user: {
+              fullname: json.data.name || json.data.fullname || "User",
+              role: json.data.role || undefined,
+              email: json.data.email || undefined,
+            },
           });
         } else {
           setCurrentUser(null);
@@ -69,10 +75,42 @@ export default function BookingPage() {
    */
   const { id } = useParams();
 
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<{
+    id: string;
+    name?: string;
+    thumbnail?: string;
+    roomName?: string;
+    capacity?: number;
+    price: number;
+    serviceFee?: number;
+  }>({
+    id: "",
+    name: "",
+    thumbnail: "",
+    roomName: "", 
+    capacity: 0,
+    price: 0,
+    serviceFee: 0,
+  });
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [booking, setBooking] = useState({
+  const [booking, setBooking] = useState<{
+    visitorType: "SELF" | "SOMEONE_ELSE";
+
+    nameGuest: string;
+    email: string;
+    phone: string;
+
+    checkIn: string;
+    checkOut: string;
+
+    totalGuest: number;
+
+    voucherCode: string;
+    discount: number;
+
+    note: string;
+  }>({
     visitorType: "SELF",
 
     nameGuest: "",
@@ -252,7 +290,11 @@ export default function BookingPage() {
             <div className="space-y-6 lg:col-span-8">
 
               <BookingUserCard
-                user={currentUser}
+                user={ currentUser?.user || {
+                  fullname: "User",
+                  role: "USER",
+                  email: "",
+                }}
               />
 
               <BookingVisitorType
@@ -267,7 +309,7 @@ export default function BookingPage() {
 
               <ContactForm
                 value={booking}
-                onChange={setBooking}
+                onChange={setBooking }
                 loading={loading}
                 onSubmit={handleBooking}
               />
@@ -281,16 +323,13 @@ export default function BookingPage() {
                 <BookingSummary
                   booking={booking}
                   product={product}
-                  onPriceChange={setPrice}
                   onVoucherChange={(voucherCode) =>
                     setBooking((prev) => ({
                       ...prev,
                       voucherCode,
                     }))
                   }
-                  onApplyVoucher={
-                    handleApplyVoucher
-                  }
+                  onApplyVoucher={handleApplyVoucher}
                 />
 
               </div>
