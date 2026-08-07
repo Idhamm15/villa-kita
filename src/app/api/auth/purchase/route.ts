@@ -16,11 +16,11 @@ export async function GET(req: NextRequest) {
         product: {
           select: {
             id: true,
-            title: true,
+            name: true,
             slug: true,
             thumbnail: true,
-            location: true,
             price: true,
+            location: true,
           },
         },
       },

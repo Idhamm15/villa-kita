@@ -25,7 +25,16 @@ export async function GET(
         paymentStatus: PaymentStatus.PAID,
       },
       include: {
-        product: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            thumbnail: true,
+            price: true,
+            location: true,
+          },
+        },
         user: {
           select: {
             id: true,
