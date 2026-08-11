@@ -8,10 +8,11 @@ import {
   FaBookmark,
   FaPen,
   FaPhone,
-  FaUmbrellaBeach,
+  FaRunning,
 } from "react-icons/fa";
 import UserDropdown from "./UserDropdown";
 import Cookies from "js-cookie";
+import { FaHouse } from "react-icons/fa6";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -66,9 +67,14 @@ export default function Navbar() {
       icon: FaHome,
     },
     {
-      title: "Liburan",
-      href: "/liburan",
-      icon: FaUmbrellaBeach,
+      title: "Sewa Villa",
+      href: "/sewa-villa",
+      icon: FaHouse,
+    },
+    {
+      title: "Trip",
+      href: "/trip",
+      icon: FaRunning,
     },
     {
       title: "Blog",
@@ -86,7 +92,6 @@ export default function Navbar() {
       icon: FaPhone,
     },
   ];
-
   const isLogin = !!user;
 
   return (

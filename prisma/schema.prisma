@@ -25,16 +25,13 @@ enum Role {
   OWNER
   USER
 }
-enum TypeProperty {
-  Hotel
-  Villa
-  Apartment
-  Guest
-  Trip
+enum Type {
+  VILLA
+  TRIP
 }
-enum TypeBooking {
-  Menginap
-  Harian
+enum bookingType {
+  MENGINAP
+  HARIAN
 }
 enum BookingStatus {
   PENDING
@@ -96,31 +93,31 @@ model User {
   updatedAt  DateTime @updatedAt
 }
 
-model CategoryProduct {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
+// model CategoryProduct {
+//   id          String   @id @default(cuid())
+//   name        String
+//   slug        String   @unique
+//   description String?
 
-  products    Product[]
+//   products    Product[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+// }
 
 model Product {
   id          String   @id @default(cuid())
 
-  categoryId  String
-  category    CategoryProduct @relation(fields: [categoryId], references: [id])
+  // categoryId  String
+  // category    CategoryProduct @relation(fields: [categoryId], references: [id])
 
   name        String
   thumbnail   String
-  typeProperty     TypeProperty[]
+  type        Type[]
   location    String?
   address     String
   urlMaps     String
-  typeBooking      TypeBooking[]
+  bookingType bookingType[]
 
   serviceFee BigInt @default(5000)
 
@@ -152,9 +149,9 @@ model Product {
   bookings     Booking[]
 
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
-  @@index([categoryId])
+  // @@index([categoryId])
   @@index([ownerId])
   @@index([createdBy])
 }
@@ -169,7 +166,7 @@ model ProductItem {
   name       String
   sort       Int @default(0)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
   @@index([productId])
   @@index([type])
@@ -184,7 +181,7 @@ model ProductImage {
   image     String?
 
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([productId])
   
@@ -230,7 +227,7 @@ model Booking {
   note String?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([userId])
   @@index([productId])
@@ -248,7 +245,7 @@ model Blog {
   isPublished Boolean  @default(true)
 
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
 
 model Voucher {
@@ -265,7 +262,7 @@ model Voucher {
   status        Boolean  @default(true)
 
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
 
 model Partner {
@@ -278,5 +275,5 @@ model Partner {
   status    Boolean  @default(true)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }

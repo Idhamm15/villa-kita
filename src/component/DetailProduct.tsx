@@ -63,8 +63,8 @@ interface ProductDetail {
   typeUnit: string;
   stock: number;
   isActive: boolean;
-  typeProperty: string[];
-  typeBooking: string[];
+  type: string[];
+  bookingType: string[];
   images: ProductImage[];
   items: ProductItem[];
 }
@@ -285,18 +285,18 @@ export default function DetailProduct() {
           <div className="rounded-2xl bg-white p-8 shadow-lg lg:col-span-8">
             <div className="flex items-center gap-3">
               <CircleHelp className="text-blue-600" size={24} />
-              <h2 className="text-xl font-bold text-blue-700">Tentang {product.typeProperty.join(", ")}</h2>
+                Tentang {Array.isArray(product.type) ? product.type.join(", ") : product.type}
             </div>
             <p className="mt-6 leading-8 text-slate-600">{product.description}</p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl bg-slate-50 p-4">
                 <p className="font-semibold">Kategori</p>
-                <p className="mt-2 text-slate-600">{product.typeProperty.join(", ")}</p>
+                <p className="mt-2 text-slate-600">{Array.isArray(product.type) ? product.type.join(", ") : product.type}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-4">
                 <p className="font-semibold">Tipe Booking</p>
-                <p className="mt-2 text-slate-600">{product.typeBooking.join(", ")}</p>
+                <p className="mt-2 text-slate-600">{Array.isArray(product.bookingType) ? product.bookingType.join(", ") : product.bookingType}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-4">
                 <p className="font-semibold">Alamat</p>

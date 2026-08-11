@@ -1,324 +1,514 @@
-import { BookingStatus, PaymentStatus, Prisma, PrismaClient, ProductItemType, Role, TypeBooking, TypeProperty } from "@prisma/client";
+import { Pool } from "pg";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 async function main() {
-  console.log("Start seeding...");
+  const client = await pool.connect();
 
-  const password = await bcrypt.hash("password123", 10);
+  try {
+    console.log("Start seeding...");
 
-  /*
-  |--------------------------------------------------------------------------
-  | Users
-  |--------------------------------------------------------------------------
-  */
+    await client.query("BEGIN");
 
-  const admin = await prisma.user.upsert({
-    where: {
-      email: "admin@villakita.com",
-    },
-    update: {},
-    create: {
-      username: "admin",
-      fullname: "Administrator",
-      email: "admin@villakita.com",
-      password,
-      role: Role.ADMIN,
-      phone: "081111111111",
-      address: "Jakarta",
-    },
-  });
+    // =====================================================
+    // PASSWORD
+    // =====================================================
 
-  const owner = await prisma.user.upsert({
-    where: {
-      email: "owner@villakita.com",
-    },
-    update: {},
-    create: {
-      username: "owner",
-      fullname: "Villa Owner",
-      email: "owner@villakita.com",
-      password,
-      role: Role.OWNER,
-      phone: "082222222222",
-      address: "Bandung",
-    },
-  });
+    const password = await bcrypt.hash("password123", 10);
 
-  const user = await prisma.user.upsert({
-    where: {
-      email: "user@villakita.com",
-    },
-    update: {},
-    create: {
-      username: "user",
-      fullname: "Regular User",
-      email: "user@villakita.com",
-      password,
-      role: Role.USER,
-      phone: "083333333333",
-      address: "Surabaya",
-    },
-  });
+    // =====================================================
+    // USERS
+    // =====================================================
 
-  /*
-  |--------------------------------------------------------------------------
-  | Category
-  |--------------------------------------------------------------------------
-  */
+    const adminId = crypto.randomUUID();
+    const ownerId = crypto.randomUUID();
+    const userId = crypto.randomUUID();
 
-  const villa = await prisma.categoryProduct.upsert({
-    where: {
-      slug: "villa",
-    },
-    update: {},
-    create: {
-      name: "Villa",
-      slug: "villa",
-      description: "Kategori Villa",
-    },
-  });
+    // ADMIN
+    await client.query(
+      `
+        INSERT INTO "User" (
+          id,
+          username,
+          fullname,
+          email,
+          password,
+          role,
+          phone,
+          address,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()
+        )
+        ON CONFLICT (email)
+        DO UPDATE SET
+          username = EXCLUDED.username,
+          fullname = EXCLUDED.fullname,
+          role = EXCLUDED.role,
+          phone = EXCLUDED.phone,
+          address = EXCLUDED.address,
+          "updatedAt" = NOW()
+      `,
+      [
+        adminId,
+        "admin",
+        "Administrator",
+        "admin@villakita.com",
+        password,
+        "ADMIN",
+        "081111111111",
+        "Jakarta",
+      ]
+    );
 
-  const hotel = await prisma.categoryProduct.upsert({
-    where: {
-      slug: "hotel",
-    },
-    update: {},
-    create: {
-      name: "Hotel",
-      slug: "hotel",
-      description: "Kategori Hotel",
-    },
-  });
+    // OWNER
+    await client.query(
+      `
+        INSERT INTO "User" (
+          id,
+          username,
+          fullname,
+          email,
+          password,
+          role,
+          phone,
+          address,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()
+        )
+        ON CONFLICT (email)
+        DO UPDATE SET
+          username = EXCLUDED.username,
+          fullname = EXCLUDED.fullname,
+          role = EXCLUDED.role,
+          phone = EXCLUDED.phone,
+          address = EXCLUDED.address,
+          "updatedAt" = NOW()
+      `,
+      [
+        ownerId,
+        "owner",
+        "Villa Owner",
+        "owner@villakita.com",
+        password,
+        "OWNER",
+        "082222222222",
+        "Bandung",
+      ]
+    );
 
-  const apartment = await prisma.categoryProduct.upsert({
-    where: {
-      slug: "apartment",
-    },
-    update: {},
-    create: {
-      name: "Apartment",
-      slug: "apartment",
-      description: "Kategori Apartment",
-    },
-  });
+    // USER
+    await client.query(
+      `
+        INSERT INTO "User" (
+          id,
+          username,
+          fullname,
+          email,
+          password,
+          role,
+          phone,
+          address,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()
+        )
+        ON CONFLICT (email)
+        DO UPDATE SET
+          username = EXCLUDED.username,
+          fullname = EXCLUDED.fullname,
+          role = EXCLUDED.role,
+          phone = EXCLUDED.phone,
+          address = EXCLUDED.address,
+          "updatedAt" = NOW()
+      `,
+      [
+        userId,
+        "user",
+        "Regular User",
+        "user@villakita.com",
+        password,
+        "USER",
+        "083333333333",
+        "Surabaya",
+      ]
+    );
 
-  /*
-  |--------------------------------------------------------------------------
-  | Product
-  |--------------------------------------------------------------------------
-  */
+    // =====================================================
+    // PRODUCT
+    // =====================================================
 
-  const product1 = await prisma.product.create({
-    data: {
-      categoryId: villa.id,
+    const productId = crypto.randomUUID();
 
-      ownerId: owner.id,
-      createdBy: admin.id,
-
-      name: "Villa Puncak Indah",
-      slug: "villa-puncak-indah",
-
-      thumbnail: "/uploads/villa1.jpg",
-
-      description:
+    await client.query(
+      `
+        INSERT INTO "Product" (
+          id,
+          "ownerId",
+          "createdBy",
+          name,
+          slug,
+          thumbnail,
+          description,
+          location,
+          address,
+          "urlMaps",
+          "type",
+          "booking",
+          "totalBedroom",
+          "totalBathroom",
+          "maxGuest",
+          wide,
+          "priceStart",
+          price,
+          "serviceFee",
+          "typeUnit",
+          stock,
+          capacity,
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10,
+          $11,
+          $12,
+          $13,
+          $14,
+          $15,
+          $16,
+          $17,
+          $18,
+          $19,
+          $20,
+          $21,
+          $22,
+          $23,
+          NOW(),
+          NOW()
+        )
+        ON CONFLICT (slug)
+        DO UPDATE SET
+          name = EXCLUDED.name,
+          "typeProperty" = EXCLUDED."typeProperty",
+          "typeBooking" = EXCLUDED."typeBooking",
+          price = EXCLUDED.price,
+          "updatedAt" = NOW()
+        RETURNING id
+      `,
+      [
+        productId,
+        ownerId,
+        adminId,
+        "Villa Puncak Indah",
+        "villa-puncak-indah",
+        "/uploads/villa1.jpg",
         "Villa nyaman dengan pemandangan pegunungan.",
+        "Puncak",
+        "Jl. Raya Puncak No. 1",
+        "https://maps.google.com",
+        "VILLA",
+        "MENGINAP",
+        4,
+        3,
+        10,
+        250,
+        "1000000",
+        "1500000",
+        "5000",
+        "Entire Villa",
+        5,
+        10,
+        true,
+      ]
+    );
 
-      location: "Puncak",
-      address: "Jl. Raya Puncak No. 1",
-      urlMaps: "https://maps.google.com",
+    // =====================================================
+    // PRODUCT IMAGES
+    // =====================================================
 
-      typeProperty: [TypeProperty.Villa],
-      typeBooking: [TypeBooking.Menginap],
+    await client.query(
+      `
+        INSERT INTO "ProductImage" (
+          id,
+          "productId",
+          image
+        )
+        VALUES
+          ($1, $2, $3),
+          ($4, $2, $5)
+      `,
+      [
+        crypto.randomUUID(),
+        productId,
+        "/uploads/villa1.jpg",
 
-      totalBedroom: 4,
-      totalBathroom: 3,
-      maxGuest: 10,
-      wide: 250,
+        crypto.randomUUID(),
+        "/uploads/villa2.jpg",
+      ]
+    );
 
-      priceStart: BigInt(1000000),
-      price: BigInt(1500000),
+    // =====================================================
+    // PRODUCT ITEMS
+    // =====================================================
 
-      serviceFee: BigInt(5000),
+    const productItems = [
+      ["FACILITY", "Private Pool"],
+      ["FACILITY", "WiFi"],
+      ["FACILITY", "BBQ Area"],
+      ["INCLUDE", "Breakfast"],
+      ["INCLUDE", "Free Parking"],
+      ["EXCLUDE", "Lunch"],
+      ["EXCLUDE", "Airport Pickup"],
+    ];
 
-      typeUnit: "Entire Villa",
+    for (const [type, name] of productItems) {
+      await client.query(
+        `
+          INSERT INTO "ProductItem" (
+            id,
+            "productId",
+            type,
+            name,
+            "createdAt",
+            "updatedAt"
+          )
+          VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            NOW(),
+            NOW()
+          )
+        `,
+        [
+          crypto.randomUUID(),
+          productId,
+          type,
+          name,
+        ]
+      );
+    }
 
-      stock: 5,
-      capacity: 10,
+    // =====================================================
+    // BOOKING
+    // =====================================================
 
-      isActive: true,
+    const bookingId = crypto.randomUUID();
 
-      images: {
-        create: [
-          {
-            image: "/uploads/villa1.jpg",
-          },
-          {
-            image: "/uploads/villa2.jpg",
-          },
-        ],
-      },
-    },
-  });
+    await client.query(
+      `
+        INSERT INTO "Booking" (
+          id,
+          "userId",
+          "productId",
+          "bookingCode",
+          "orderId",
+          "nameGuest",
+          email,
+          phone,
+          "checkIn",
+          "checkOut",
+          "totalGuest",
+          "totalPrice",
+          status,
+          "paymentStatus",
+          "paymentMethod",
+          "transactionId",
+          "paidAt",
+          "expiredAt",
+          note,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10,
+          $11,
+          $12,
+          $13,
+          $14,
+          $15,
+          $16,
+          $17,
+          $18,
+          $19,
+          NOW(),
+          NOW()
+        )
+      `,
+      [
+        bookingId,
+        userId,
+        productId,
+        "BK202608010001",
+        "ORDER-202608010001",
+        "Budi Santoso",
+        "budi@gmail.com",
+        "08123456789",
+        new Date("2026-08-01"),
+        new Date("2026-08-03"),
+        4,
+        "3000000",
+        "PAID",
+        "PAID",
+        "bank_transfer",
+        "TXN-202608010001",
+        new Date(),
+        new Date(Date.now() + 24 * 60 * 60 * 1000),
+        "Late check in",
+      ]
+    );
 
-  /*
-  |--------------------------------------------------------------------------
-  | Product Item
-  |--------------------------------------------------------------------------
-  */
+    // =====================================================
+    // BLOG
+    // =====================================================
 
-  await prisma.productItem.createMany({
-    data: [
-      {
-        productId: product1.id,
-        type: ProductItemType.FACILITY,
-        name: "Private Pool",
-      },
-      {
-        productId: product1.id,
-        type: ProductItemType.FACILITY,
-        name: "WiFi",
-      },
-      {
-        productId: product1.id,
-        type: ProductItemType.FACILITY,
-        name: "BBQ Area",
-      },
+    await client.query(
+      `
+        INSERT INTO "Blog" (
+          id,
+          title,
+          slug,
+          thumbnail,
+          content,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES
+          ($1, $2, $3, $4, $5, NOW(), NOW()),
+          ($6, $7, $8, $9, $10, NOW(), NOW())
+        ON CONFLICT (slug)
+        DO NOTHING
+      `,
+      [
+        crypto.randomUUID(),
+        "Tips Memilih Villa",
+        "tips-memilih-villa",
+        "/uploads/blog1.jpg",
+        "Lorem ipsum dolor sit amet.",
 
-      {
-        productId: product1.id,
-        type: ProductItemType.INCLUDE,
-        name: "Breakfast",
-      },
-      {
-        productId: product1.id,
-        type: ProductItemType.INCLUDE,
-        name: "Free Parking",
-      },
+        crypto.randomUUID(),
+        "Liburan Bersama Keluarga",
+        "liburan-keluarga",
+        "/uploads/blog2.jpg",
+        "Lorem ipsum dolor sit amet.",
+      ]
+    );
 
-      {
-        productId: product1.id,
-        type: ProductItemType.EXCLUDE,
-        name: "Lunch",
-      },
-      {
-        productId: product1.id,
-        type: ProductItemType.EXCLUDE,
-        name: "Airport Pickup",
-      },
-    ],
-  });
+    // =====================================================
+    // VOUCHER
+    // =====================================================
 
-  /*
-  |--------------------------------------------------------------------------
-  | Booking
-  |--------------------------------------------------------------------------
-  */
+    await client.query(
+      `
+        INSERT INTO "Voucher" (
+          id,
+          code,
+          description,
+          discount,
+          "minPurchase",
+          "dateExpired",
+          status,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          NOW(),
+          NOW()
+        )
+        ON CONFLICT (code)
+        DO NOTHING
+      `,
+      [
+        crypto.randomUUID(),
+        "WELCOME10",
+        "Diskon 10%",
+        10,
+        1000000,
+        new Date("2027-01-01"),
+        true,
+      ]
+    );
 
-  await prisma.booking.create({
-    data: {
-      user: {
-        connect: {
-          id: user.id,
-        },
-      },
+    // =====================================================
+    // PARTNER
+    // =====================================================
 
-      product: {
-        connect: {
-          id: product1.id,
-        },
-      },
+    await client.query(
+      `
+        INSERT INTO "Partner" (
+          id,
+          image,
+          status,
+          "createdAt",
+          "updatedAt"
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          NOW(),
+          NOW()
+        )
+      `,
+      [
+        crypto.randomUUID(),
+        "partner.png",
+        true,
+      ]
+    );
 
-      bookingCode: "BK202608010001",
-      orderId: "ORDER-202608010001",
+    await client.query("COMMIT");
 
-      nameGuest: "Budi Santoso",
-      email: "budi@gmail.com",
-      phone: "08123456789",
+    console.log("✅ Seeding selesai");
+  } catch (error) {
+    await client.query("ROLLBACK");
 
-      checkIn: new Date("2026-08-01"),
-      checkOut: new Date("2026-08-03"),
+    console.error("❌ Seeding gagal:", error);
 
-      totalGuest: 4,
-      totalPrice: BigInt(3000000),
-
-      status: BookingStatus.PAID,
-      paymentStatus: PaymentStatus.PAID,
-
-      paymentMethod: "bank_transfer",
-      transactionId: "TXN-202608010001",
-
-      paidAt: new Date(),
-
-      expiredAt: new Date(
-        Date.now() + 24 * 60 * 60 * 1000
-      ),
-
-      note: "Late check in",
-    },
-  });
-  /*
-  |--------------------------------------------------------------------------
-  | Blog
-  |--------------------------------------------------------------------------
-  */
-
-  await prisma.blog.createMany({
-    data: [
-      {
-        title: "Tips Memilih Villa",
-        slug: "tips-memilih-villa",
-        thumbnail: "/uploads/blog1.jpg",
-        content: "Lorem ipsum dolor sit amet.",
-      },
-      {
-        title: "Liburan Bersama Keluarga",
-        slug: "liburan-keluarga",
-        thumbnail: "/uploads/blog2.jpg",
-        content: "Lorem ipsum dolor sit amet.",
-      },
-    ],
-  });
-
-  /*
-  |--------------------------------------------------------------------------
-  | Voucher
-  |--------------------------------------------------------------------------
-  */
-
-  await prisma.voucher.create({
-    data: {
-      code: "WELCOME10",
-      description: "Diskon 10%",
-      discount: 10,
-      minPurchase: 1000000,
-      dateExpired: new Date("2027-01-01"),
-      status: true,
-    },
-  });
-
-  /*
-  |--------------------------------------------------------------------------
-  | Partner
-  |--------------------------------------------------------------------------
-  */
-
-  await prisma.partner.create({
-    data: {
-      image: "partner.png",
-      status: true,
-    },
-  });
-
-  console.log("✅ Seeding selesai");
+    process.exit(1);
+  } finally {
+    client.release();
+    await pool.end();
+  }
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main();
+

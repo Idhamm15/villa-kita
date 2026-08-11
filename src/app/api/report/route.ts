@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  PaymentStatus,
-  TypeBooking,
-  TypeProperty,
-} from "@prisma/client";
+import { PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { authorizeAdminOwner } from "@/lib/auth";
 
@@ -20,80 +16,105 @@ export async function GET(req: NextRequest) {
 
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
-
     const paymentStatus = searchParams.get("paymentStatus") as PaymentStatus | null;
-    const typeProperty = searchParams.get("typeProperty") as TypeProperty | null;
-    const typeBooking = searchParams.get("typeBooking") as TypeBooking | null;
 
-    const where: any = {};
+    // ==========================
+    // WHERE
+    // ==========================
 
-    // filter periode
-    if (startDate || endDate) {
-      where.createdAt = {};
+    const conditions: Prisma.Sql[] = [];
 
-      if (startDate) {
-        where.createdAt.gte = new Date(startDate);
-      }
+    if (startDate) {
+      conditions.push(
+        Prisma.sql`b."createdAt" >= ${new Date(startDate)}`
+      );
+    }
 
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        where.createdAt.lte = end;
-      }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      conditions.push(
+        Prisma.sql`b."createdAt" <= ${end}`
+      );
     }
 
     if (paymentStatus) {
-      where.paymentStatus = paymentStatus;
+      conditions.push(
+        Prisma.sql`b."paymentStatus" = ${paymentStatus}`
+      );
     }
 
-    if (typeProperty || typeBooking) {
-      where.product = {};
+    const whereSql =
+      conditions.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`
+        : Prisma.empty;
 
-      if (typeProperty) {
-        where.product.typeProperty = {
-          has: typeProperty,
-        };
-      }
+    // ==========================
+    // DATA
+    // ==========================
 
-      if (typeBooking) {
-        where.product.typeBooking = {
-          has: typeBooking,
-        };
-      }
-    }
+    const bookings = await prisma.$queryRaw<
+      {
+        tanggal: Date;
+        invoice: string;
+        properti: string;
+        kategori: string;
+        nominal: bigint;
+        status: PaymentStatus;
+      }[]
+    >`
+      SELECT
+        COALESCE(b."paidAt", b."createdAt") AS tanggal,
+        b."bookingCode" AS invoice,
+        p."name" AS properti,
+        p."typeProperty" AS kategori,
+        b."totalPrice" AS nominal,
+        b."paymentStatus" AS status
 
-    const [bookings, total] = await Promise.all([
-      prisma.booking.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          createdAt: "desc",
-        },
-        include: {
-          product: {
-            select: {
-              name: true,
-              typeProperty: true,
-              typeBooking: true,
-            },
-          },
-        },
-      }),
+      FROM "Booking" b
 
-      prisma.booking.count({
-        where,
-      }),
-    ]);
+      INNER JOIN "Product" p
+        ON p.id = b."productId"
+
+      ${whereSql}
+
+      ORDER BY b."createdAt" DESC
+
+      LIMIT ${limit}
+      OFFSET ${skip}
+    `;
+
+    // ==========================
+    // TOTAL
+    // ==========================
+
+    const totalResult = await prisma.$queryRaw<
+      { total: bigint }[]
+    >`
+      SELECT COUNT(*) AS total
+
+      FROM "Booking" b
+
+      INNER JOIN "Product" p
+        ON p.id = b."productId"
+
+      ${whereSql}
+    `;
+
+    const total = Number(totalResult[0]?.total ?? 0);
+
+    // ==========================
+    // RESPONSE
+    // ==========================
 
     const data = bookings.map((item) => ({
-      tanggal: item.paidAt ?? item.createdAt,
-      invoice: item.bookingCode,
-      properti: item.product.name,
-      kategori: item.product.typeProperty,
-      deskripsi: `${item.product.typeBooking.join(", ")} (${item.checkIn.toISOString().split("T")[0]} - ${item.checkOut.toISOString().split("T")[0]})`,
-      nominal: Number(item.totalPrice),
-      status: item.paymentStatus,
+      tanggal: item.tanggal,
+      invoice: item.invoice,
+      properti: item.properti,
+      kategori: item.kategori,
+      nominal: Number(item.nominal),
+      status: item.status,
     }));
 
     return NextResponse.json({
