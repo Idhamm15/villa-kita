@@ -1,94 +1,108 @@
+import pool from "@/lib/db";
+import { responseError } from "@/lib/helper";
+import { getPagination } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
+import { buildOwnerFilter, getOwners } from "@/lib/querry/owner.query";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+  let client;
+
   try {
     const { searchParams } = new URL(req.url);
 
-    const page = Number(searchParams.get("page") ?? 1);
-    const limit = Number(searchParams.get("limit") ?? 10);
-    const search = searchParams.get("search") ?? "";
+    // ==========================
+    // PAGINATION
+    // ==========================
 
-    const skip = (page - 1) * limit;
+    const {
+      page,
+      limit,
+      offset,
+    } = getPagination(req);
 
-    const where = {
-      OR: [
-        {
-          fullname: {
-            contains: search,
-            mode: "insensitive" as const,
-          },
-        },
-        {
-          email: {
-            contains: search,
-            mode: "insensitive" as const,
-          },
-        },
-        {
-          phone: {
-            contains: search,
-            mode: "insensitive" as const,
-          },
-        },
-      ],
+    // ==========================
+    // FILTER
+    // ==========================
+
+    const filter = {
+      search:
+        searchParams.get("search")?.trim() ?? "",
     };
 
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          registerAt: "desc",
-        },
-        select: {
-          id: true,
-          fullname: true,
-          email: true,
-          phone: true,
-          nameBank: true,
-          noBank: true,
-          registerAt: true,
-        },
-      }),
-      prisma.user.count({
-        where,
-      }),
-    ]);
+    // ==========================
+    // CONNECT DB
+    // ==========================
 
-    const formattedUsers = users.map((user) => ({
-      ...user,
-      registerAt: user.registerAt.toISOString().split("T")[0],
+    client = await pool.connect();
+
+    // ==========================
+    // BUILD FILTER
+    // ==========================
+
+    const {
+      whereSql,
+      params,
+      nextParamIndex,
+    } = buildOwnerFilter(filter);
+
+    // ==========================
+    // GET OWNERS
+    // ==========================
+
+    const {
+      owners,
+      total,
+    } = await getOwners(
+      client,
+      whereSql,
+      params,
+      limit,
+      offset,
+      nextParamIndex
+    );
+
+    // ==========================
+    // FORMAT
+    // ==========================
+
+    const data = owners.map((owner) => ({
+      ...owner,
+
+      registerAt: owner.registerAt
+        ? new Date(owner.registerAt)
+            .toISOString()
+            .split("T")[0]
+        : null,
     }));
+
+    // ==========================
+    // RESPONSE
+    // ==========================
 
     return NextResponse.json({
       status: true,
       code: 200,
       message: "Success",
-      data: formattedUsers,
+
+      data,
+
       meta: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPage: Math.ceil(
+          total / limit
+        ),
       },
     });
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json(
-      {
-        status: false,
-        code: 500,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return responseError(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }

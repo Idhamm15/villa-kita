@@ -93,11 +93,11 @@ export default function HeaderDashboard({
               icon={ShoppingCart}
               label="Kelola Owner"
             />
-            <SidebarButton
+            {/* <SidebarButton
               link="/dashboard/category-product"
               icon={FolderKanban}
               label="Kategori Properti"
-            />
+            /> */}
             <SidebarButton
               link="/dashboard/product"
               icon={House}

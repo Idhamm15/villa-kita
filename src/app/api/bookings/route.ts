@@ -5,68 +5,130 @@ import {
 } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { authorizeUser, responseAuth } from "@/lib/auth";
-import { serializeBigInt } from "@/lib/helper";
+import { responseError, serializeBigInt } from "@/lib/helper";
+import { getPagination } from "@/lib/pagination";
+import pool from "@/lib/db";
+import { buildBookingFilter, getBookings } from "@/lib/querry/booking.query";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  let client;
+
   try {
-    const bookings = await prisma.booking.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            fullname: true,
-            email: true,
-          },
-        },
-        product: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            price: true,
-            location: true,
-            images: true,
-          },
-        },
-      },
-    });
+    const { searchParams } = new URL(req.url);
 
+    // ==========================
+    // PAGINATION
+    // ==========================
 
-    const data = JSON.parse(
-      JSON.stringify(bookings, (_, value) =>
-        typeof value === "bigint"
-          ? Number(value)
-          : value
-      )
+    const {
+      page,
+      limit,
+      offset,
+    } = getPagination(req);
+
+    // ==========================
+    // FILTER
+    // ==========================
+
+    const filter = {
+      search:
+        searchParams.get("search")?.trim() ?? "",
+
+      status:
+        searchParams.get("status")?.trim() ?? "",
+    };
+
+    // ==========================
+    // STATUS VALIDATION
+    // ==========================
+
+    const allowedStatus = [
+      "PENDING",
+      "PAID",
+      "CANCELLED",
+      "EXPIRED",
+      "FAILED",
+    ];
+
+    if (
+      filter.status &&
+      !allowedStatus.includes(filter.status)
+    ) {
+      return NextResponse.json(
+        {
+          status: false,
+          code: 400,
+          message: "Invalid status",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // ==========================
+    // CONNECT DB
+    // ==========================
+
+    client = await pool.connect();
+
+    // ==========================
+    // FILTER
+    // ==========================
+
+    const {
+      whereSql,
+      params,
+      nextParamIndex,
+    } = buildBookingFilter(filter);
+
+    // ==========================
+    // BOOKINGS
+    // ==========================
+
+    const {
+      bookings,
+      total,
+    } = await getBookings(
+      client,
+      whereSql,
+      params,
+      limit,
+      offset,
+      nextParamIndex
     );
 
+    // ==========================
+    // FORMAT
+    // ==========================
+
+    const data = serializeBigInt(bookings);
+
+    // ==========================
+    // RESPONSE
+    // ==========================
 
     return NextResponse.json({
       status: true,
       code: 200,
       message: "Success",
       data,
-    });
 
+      meta: {
+        page,
+        limit,
+        total,
+        totalPage: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json(
-      {
-        status: false,
-        code: 500,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return responseError(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
 

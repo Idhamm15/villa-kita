@@ -2,86 +2,111 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { saveImage, isImage } from "@/lib/upload";
 import { fileUrl } from "@/lib/url";
+import { getPagination } from "@/lib/pagination";
+import pool from "@/lib/db";
+import { buildBlogFilter, getBlogs } from "@/lib/querry/blog.query";
+import { responseError } from "@/lib/helper";
 
 export async function GET(req: NextRequest) {
+  let client;
+
   try {
     const { searchParams } = new URL(req.url);
 
-    const page = Number(searchParams.get("page") ?? 1);
-    const limit = Number(searchParams.get("limit") ?? 10);
-    const search = searchParams.get("search") ?? "";
-    const isPublished = searchParams.get("isPublished");
+    // ==========================
+    // PAGINATION
+    // ==========================
 
-    const skip = (page - 1) * limit;
+    const {
+      page,
+      limit,
+      offset,
+    } = getPagination(req);
 
-    const where: any = {};
+    // ==========================
+    // FILTER
+    // ==========================
 
-    if (search) {
-      where.OR = [
-        {
-          title: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          slug: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-      ];
-    }
+    const filter = {
+      search:
+        searchParams.get("search")?.trim() ?? "",
 
-    if (isPublished !== null) {
-      where.isPublished = isPublished === "true";
-    }
+      isPublished:
+        searchParams.get("isPublished"),
+    };
 
-    const [blogs, total] = await Promise.all([
-      prisma.blog.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
+    // ==========================
+    // CONNECT DB
+    // ==========================
 
-      prisma.blog.count({
-        where,
-      }),
-    ]);
+    client = await pool.connect();
+
+    // ==========================
+    // BUILD FILTER
+    // ==========================
+
+    const {
+      whereSql,
+      params,
+      nextParamIndex,
+    } = buildBlogFilter(filter);
+
+    // ==========================
+    // GET BLOGS
+    // ==========================
+
+    const {
+      blogs,
+      total,
+    } = await getBlogs(
+      client,
+      whereSql,
+      params,
+      limit,
+      offset,
+      nextParamIndex
+    );
+
+    // ==========================
+    // FORMAT
+    // ==========================
 
     const data = blogs.map((blog) => ({
       ...blog,
-      thumbnail: fileUrl(blog.thumbnail),
+
+      thumbnail: blog.thumbnail
+        ? fileUrl(blog.thumbnail)
+        : null,
     }));
+
+    // ==========================
+    // RESPONSE
+    // ==========================
 
     return NextResponse.json({
       status: true,
       code: 200,
       message: "Success",
+
       data,
+
       meta: {
         page,
         limit,
         total,
-        totalPage: Math.ceil(total / limit),
+        totalPage: Math.ceil(
+          total / limit
+        ),
       },
     });
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json(
-      {
-        status: false,
-        code: 500,
-        message: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return responseError(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
 

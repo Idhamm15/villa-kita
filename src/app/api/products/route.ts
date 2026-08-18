@@ -6,6 +6,8 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { responseError, serializeBigInt } from "@/lib/helper";
 import { authorizeAdminOwner } from "@/lib/auth";
 import pool from "@/lib/db";
+import { getPagination } from "@/lib/pagination";
+import { buildProductFilter, getProductRelations, getProducts } from "@/lib/querry/product.query";
 
 export async function GET(req: NextRequest) {
   let client;
@@ -13,30 +15,29 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const page = Math.max(
-      Number(searchParams.get("page") ?? 1),
-      1
-    );
+    const {
+      page,
+      limit,
+      offset,
+    } = getPagination(req);
 
-    const limit = Math.max(
-      Number(searchParams.get("limit") ?? 10),
-      1
-    );
-
-    const search = searchParams.get("search")?.trim() ?? "";
-    const location = searchParams.get("location")?.trim() ?? "";
-    const isActive = searchParams.get("isActive");
-    const type = searchParams.get("type")?.trim() ?? "";
-
-    const offset = (page - 1) * limit;
+    const filter = {
+      search: searchParams.get("search")?.trim() ?? "",
+      location: searchParams.get("location")?.trim() ?? "",
+      isActive: searchParams.get("isActive"),
+      type: searchParams.get("type")?.trim() ?? "",
+    };
 
     // ==========================
-    // VALIDASI TYPE
+    // VALIDASI
     // ==========================
 
     const allowedType = ["Villa", "Trip"];
 
-    if (type && !allowedType.includes(type)) {
+    if (
+      filter.type &&
+      !allowedType.includes(filter.type)
+    ) {
       return NextResponse.json(
         {
           status: false,
@@ -50,159 +51,47 @@ export async function GET(req: NextRequest) {
     client = await pool.connect();
 
     // ==========================
-    // BUILD WHERE
+    // FILTER
     // ==========================
 
-    const conditions: string[] = [];
-    const params: any[] = [];
-
-    let paramIndex = 1;
-
-    // ==========================
-    // SEARCH
-    // ==========================
-
-    if (search) {
-      conditions.push(`
-        (
-          p.name ILIKE $${paramIndex}
-          OR p.slug ILIKE $${paramIndex}
-        )
-      `);
-
-      params.push(`%${search}%`);
-      paramIndex++;
-    }
-
-    // ==========================
-    // LOCATION
-    // ==========================
-
-    if (location) {
-      conditions.push(`
-        p.location ILIKE $${paramIndex}
-      `);
-
-      params.push(`%${location}%`);
-      paramIndex++;
-    }
-
-    // ==========================
-    // IS ACTIVE
-    // ==========================
-
-    if (isActive === "true" || isActive === "false") {
-      conditions.push(`
-        p."isActive" = $${paramIndex}
-      `);
-
-      params.push(isActive === "true");
-      paramIndex++;
-    }
-
-    // ==========================
-    // TYPE
-    // ==========================
-
-    if (type) {
-      conditions.push(`
-        p."typeProperty" = $${paramIndex}
-      `);
-
-      params.push(type);
-      paramIndex++;
-    }
-
-    const whereSql =
-      conditions.length > 0
-        ? `WHERE ${conditions.join(" AND ")}`
-        : "";
-
-    // ==========================
-    // COUNT
-    // ==========================
-
-    const countResult = await client.query(
-      `
-        SELECT COUNT(*)::int AS total
-        FROM "Product" p
-        ${whereSql}
-      `,
-      params
-    );
-
-    const total = countResult.rows[0].total;
+    const {
+      whereSql,
+      params,
+      nextParamIndex,
+    } = buildProductFilter(filter);
 
     // ==========================
     // PRODUCTS
     // ==========================
 
-    const productParams = [
-      ...params,
+    const {
+      products,
+      total,
+    } = await getProducts(
+      client,
+      whereSql,
+      params,
       limit,
       offset,
-    ];
-
-    const productsResult = await client.query(
-      `
-        SELECT
-          p.*,
-
-          json_build_object(
-            'id', u.id,
-            'fullname', u.fullname,
-            'email', u.email
-          ) AS owner
-
-        FROM "Product" p
-
-        LEFT JOIN "User" u
-          ON u.id = p."ownerId"
-
-        ${whereSql}
-
-        ORDER BY p."createdAt" DESC
-
-        LIMIT $${paramIndex}
-        OFFSET $${paramIndex + 1}
-      `,
-      productParams
+      nextParamIndex
     );
 
-    const products = productsResult.rows;
-
     // ==========================
-    // GET IMAGES & ITEMS
+    // RELATIONS
     // ==========================
 
     for (const product of products) {
-      const [imagesResult, itemsResult] = await Promise.all([
-        client.query(
-          `
-            SELECT *
-            FROM "ProductImage"
-            WHERE "productId" = $1
-          `,
-          [product.id]
-        ),
+      const relations = await getProductRelations(
+        client,
+        product.id
+      );
 
-        client.query(
-          `
-            SELECT *
-            FROM "ProductItem"
-            WHERE "productId" = $1
-            ORDER BY sort ASC
-          `,
-          [product.id]
-        ),
-      ]);
-
-      product.images = imagesResult.rows;
-      product.items = itemsResult.rows;
+      product.images = relations.images;
+      product.items = relations.items;
     }
 
     // ==========================
-    // FORMAT DATA
+    // FORMAT
     // ==========================
 
     const data = products.map((product) => ({
@@ -222,12 +111,14 @@ export async function GET(req: NextRequest) {
         ? fileUrl(product.thumbnail)
         : null,
 
-      images: (product.images ?? []).map((image: any) => ({
-        ...image,
-        image: image.image
-          ? fileUrl(image.image)
-          : null,
-      })),
+      images: (product.images ?? []).map(
+        (image: any) => ({
+          ...image,
+          image: image.image
+            ? fileUrl(image.image)
+            : null,
+        })
+      ),
     }));
 
     return NextResponse.json({
